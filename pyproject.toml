@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streamlit-flow-component"
+version = "1.6.1"
+description = "Streamlit Component Wrapper for React Flow"
+readme = "README.md"
+authors = [
+    { name = "Dhruv Kapur", email = "dhruvkapur4@gmail.com" }
+]
+requires-python = ">=3.13"
+license = { text = "" }
+keywords = []
+classifiers = []
+dependencies = [
+    "streamlit >= 1.0.0",
+]
+
+[tool.setuptools]
+include-package-data = true
+packages = ["streamlit_flow"]
+
+[tool.setuptools.package-data] 
+streamlit_flow = ["frontend/build/**"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+
+[tool.pixi.tasks]
+set_release = {cmd="sed -i '' 's/_RELEASE = False/_RELEASE = True/g' streamlit_flow/__init__.py"}
+set_dev = {cmd="sed -i '' 's/_RELEASE = True/_RELEASE = False/g' streamlit_flow/__init__.py"}
+
+frontend_build = {cmd="npm install && npm run build", cwd="streamlit_flow/frontend", depends-on=["set_release"]}
+frontend_start = {cmd="npm install && npm run start", cwd="streamlit_flow/frontend", depends-on=["clean","set_dev"]}
+
+clean_build = {cmd="rm -rf build"}
+clean_dist = {cmd="rm -rf dist"}
+clean_egg = {cmd="rm -rf streamlit_flow_component.egg-info"}
+clean_frontend_build = {cmd="rm -rf build", cwd="streamlit_flow/frontend"}
+clean_frontend_modules = {cmd="rm -rf node_modules", cwd="streamlit_flow/frontend"}
+
+clean = {depends-on=["clean_build","clean_dist","clean_egg","clean_frontend_build","clean_frontend_modules","set_dev"]}
+
+example = {cmd = "streamlit run example.py", depends-on=["frontend_build"]}
+
+[tool.pixi.dependencies]
+nodejs = ">=25.6.1,<25.7"
