@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from .elements import StreamlitFlowEdge, StreamlitFlowNode
+from .streamlit_flow_edge import StreamlitFlowEdge
+from .streamlit_flow_node import StreamlitFlowNode
 
 
 @dataclass
