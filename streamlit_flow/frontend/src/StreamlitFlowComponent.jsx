@@ -36,10 +36,6 @@ const StreamlitFlowComponent = (props) => {
 
     const [layoutCalculated, setLayoutCalculated] = useState(false);
 
-    const [paneContextMenu, setPaneContextMenu] = useState(null);
-    const [nodeContextMenu, setNodeContextMenu] = useState(null);
-    const [edgeContextMenu, setEdgeContextMenu] = useState(null);
-
     const nodesInitialized = useNodesInitialized({'includeHiddenNodes': false});
 
     const ref = useRef(null);
@@ -64,16 +60,6 @@ const StreamlitFlowComponent = (props) => {
         const timestamp = (new Date()).getTime();
         setLastUpdateTimestamp(timestamp);
         Streamlit.setComponentValue({'nodes': _nodes, 'edges': _edges, 'selectedId': selectedId, 'timestamp': timestamp});
-    }
-
-    const calculateMenuPosition = (event) => {
-        const pane = ref.current.getBoundingClientRect();
-        return {
-            top: event.clientY < pane.height - 200 && event.clientY,
-            left: event.clientX < pane.width - 200 && event.clientX,
-            right: event.clientX >= pane.width - 200 && pane.width - event.clientX,
-            bottom: event.clientY >= pane.height - 200 && pane.height - event.clientY,
-        }
     }
 
     const clearMenus = () => {
@@ -127,47 +113,6 @@ const StreamlitFlowComponent = (props) => {
     useEffect(() => {
         setEdges(edges.map(edge => ({...edge, labelStyle:{'fill': props.theme.base === "dark" ? 'white' : 'black'}})))
     }, [props.theme.base])
-
-    // Context Menu Callbacks
-
-    const handlePaneContextMenu = (event) => {
-        event.preventDefault();
-
-        setNodeContextMenu(null);
-        setEdgeContextMenu(null);
-
-        setPaneContextMenu({
-            ...calculateMenuPosition(event),
-            clickPos: reactFlowInstance.screenToFlowPosition({
-                x: event.clientX,
-                y: event.clientY
-            })
-        });
-    }
-
-    const handleNodeContextMenu = (event, node) => {
-        event.preventDefault();
-
-        setPaneContextMenu(null);
-        setEdgeContextMenu(null);
-
-        setNodeContextMenu({
-            node: node,
-            ...calculateMenuPosition(event)
-        })
-    }
-
-    const handleEdgeContextMenu = (event, edge) => {
-        event.preventDefault();
-
-        setPaneContextMenu(null);
-        setNodeContextMenu(null);
-
-        setEdgeContextMenu({
-            edge: edge,
-            ...calculateMenuPosition(event)
-        })
-    }
 
     // Flow interaction callbacks
 
