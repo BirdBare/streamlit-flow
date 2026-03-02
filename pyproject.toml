@@ -44,7 +44,7 @@ clean_frontend_modules = {cmd="rm -rf node_modules", cwd="streamlit_flow/fronten
 
 clean = {depends-on=["clean_build","clean_dist","clean_egg","clean_frontend_build","clean_frontend_modules","set_dev"]}
 
-example = {cmd = "streamlit run example.py", depends-on=["frontend_build"]}
+example = {cmd = "streamlit run example.py", depends-on=["set_dev"]}
 
 [tool.pixi.dependencies]
 nodejs = ">=25.6.1,<25.7"
