@@ -28,6 +28,9 @@ class StreamlitFlowEdge:
         label_style: dict[str, typing.Any] = {},
     ) -> None:
 
+        assert source_handle in source_node.handles, "source_handle is not a valid handle for source_node"
+        assert target_handle in target_node.handles, "source_handle is not a valid handle for source_node"
+
         self.id = str(uuid.uuid4())
         self.source_node = source_node
         self.source_handle = source_handle
