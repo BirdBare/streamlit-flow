@@ -164,7 +164,7 @@ const StreamlitFlowComponent = (props) => {
                 zoomOnPinch={props.args.allowZoom}
                 minZoom={props.args.minZoom}
                 proOptions={{hideAttribution: props.args.hideWatermark}}>
-
+            <Background/>
             {props.args["showControls"] && <Controls/>}
             {props.args["showMiniMap"] && <MiniMap pannable zoomable/>}
             </ReactFlow>
