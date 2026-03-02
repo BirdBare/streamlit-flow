@@ -36,6 +36,7 @@ def streamlit_flow(
     show_minimap: bool = False,
     allow_new_edges: bool = False,
     animate_new_edges: bool = False,
+    type_of_new_edges: typing.Literal["default", "straight", "step", "smoothstep", "simplebezier"] = "default",
     style: dict = {},
     layout: Layout = ManualLayout(),
     get_node_on_click: bool = False,
@@ -43,9 +44,6 @@ def streamlit_flow(
     pan_on_drag: bool = True,
     allow_zoom: bool = True,
     min_zoom: float = 0.5,
-    enable_pane_menu: bool = False,
-    enable_node_menu: bool = False,
-    enable_edge_menu: bool = False,
     hide_watermark: bool = False,
 ):
     """
@@ -67,9 +65,6 @@ def streamlit_flow(
     - **pan_on_drag** : bool : Whether to pan on drag.
     - **allow_zoom** : bool : Whether to allow zoom.
     - **min_zoom** : float : The minimum zoom level.
-    - **enable_pane_menu** : bool : Whether to enable the pane menu.
-    - **enable_node_menu** : bool : Whether to enable the node menu.
-    - **enable_edge_menu** : bool : Whether to enable the edge menu.
     - **hide_watermark** : bool : Whether to hide the watermark.
 
     """
@@ -81,17 +76,15 @@ def streamlit_flow(
         fitView=fit_view,
         showMiniMap=show_minimap,
         style=style,
-        animateNewEdges=animate_new_edges,
         allowNewEdges=allow_new_edges,
+        animateNewEdges=animate_new_edges,
+        typeOfNewEdges=type_of_new_edges,
         layoutOptions=layout.__to_dict__(),
         getNodeOnClick=get_node_on_click,
         getEdgeOnClick=get_edge_on_click,
         panOnDrag=pan_on_drag,
         allowZoom=allow_zoom,
         minZoom=min_zoom,
-        enableNodeMenu=enable_node_menu,
-        enablePaneMenu=enable_pane_menu,
-        enableEdgeMenu=enable_edge_menu,
         hideWatermark=hide_watermark,
         key=key,
         timestamp=state.timestamp,

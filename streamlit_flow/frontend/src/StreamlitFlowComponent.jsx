@@ -191,7 +191,7 @@ const StreamlitFlowComponent = (props) => {
 
     const handleConnect = (params) => {
         const newEdgeId = uuidv4(); 
-        const newEdges = addEdge({id: newEdgeId, ...params, markerStart: {},markerEnd: {}, label:"",hidden:false, animated:props.args["animateNewEdges"], deletable:true, focusable:true,zIndex:0,style:{},labelStyle:{}}, edges);
+        const newEdges = addEdge({id: newEdgeId, ...params, type:props.args["typeOfNewEdges"], markerStart: {},markerEnd: {}, label:"",hidden:false, animated:props.args["animateNewEdges"], deletable:true, focusable:true,zIndex:0,style:{},labelStyle:{}}, edges);
         setEdges(newEdges);
         handleDataReturnToStreamlit(nodes, newEdges, newEdgeId);
     }

@@ -17,6 +17,7 @@ class StreamlitFlowEdge:
         target_handle: StreamlitFlowHandle,
         label: str = "",
         *,
+        type: typing.Literal["default", "straight", "step", "smoothstep", "simplebezier"] = "default",
         marker_start: StreamlitFlowMarker | None = None,  # TODO
         marker_end: StreamlitFlowMarker | None = None,  # TODO
         hidden: bool = False,
@@ -37,6 +38,7 @@ class StreamlitFlowEdge:
         self.target_node = target_node
         self.target_handle = target_handle
         self.label = label
+        self.type = type
         self.marker_start = marker_start
         self.marker_end = marker_end
         self.hidden = hidden
@@ -63,6 +65,7 @@ class StreamlitFlowEdge:
             "target": self.target_node.id,
             "targetHandle": self.target_handle.id,
             "label": self.label,
+            "type": self.type,
             "markerStart": {} if self.marker_start is None else self.marker_start.as_dict(),
             "markerEnd": {} if self.marker_end is None else self.marker_end.as_dict(),
             "hidden": self.hidden,
@@ -84,6 +87,7 @@ class StreamlitFlowEdge:
             target_node=input_dict["target_node"],
             target_handle=input_dict["target_handle"],
             label=input_dict["label"],
+            type=input_dict["type"],
             marker_start=input_dict["marker_start"],
             marker_end=input_dict["marker_end"],
             hidden=input_dict["hidden"],
