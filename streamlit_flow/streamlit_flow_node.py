@@ -30,14 +30,23 @@ class StreamlitFlowNode:
         self.id = str(uuid.uuid4())
         self.pos_x = pos_x
         self.pos_y = pos_y
-        self.handles = handles
+
+        if handles == []:
+            self.handles = []
+        else:
+            self.handles = handles
+
         self.hidden = hidden
         self.draggable = draggable
         self.selectable = selectable
         self.deletable = deletable
         self.focusable = focusable
         self.z_index = z_index
-        self.style = style
+
+        if style == {}:
+            self.style = {}
+        else:
+            self.style = style
 
         if "width" not in self.style:
             self.style["width"] = "auto"

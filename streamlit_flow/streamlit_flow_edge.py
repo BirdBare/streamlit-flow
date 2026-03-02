@@ -44,8 +44,16 @@ class StreamlitFlowEdge:
         self.deletable = deletable
         self.focusable = focusable
         self.z_index = z_index
-        self.style = style
-        self.label_style = label_style
+
+        if style == {}:
+            self.style = {}
+        else:
+            self.style = style
+
+        if label_style == {}:
+            self.label_style = {}
+        else:
+            self.label_style = label_style
 
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {

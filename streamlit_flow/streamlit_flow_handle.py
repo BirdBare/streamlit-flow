@@ -21,7 +21,11 @@ class StreamlitFlowHandle:
         self.valid_targets = valid_targets
         self.is_target = is_target
         self.valid_sources = valid_sources
-        self.style = style
+
+        if style == {}:
+            self.style = {}
+        else:
+            self.style = style
 
     @typing.overload
     def add_valid_sources(self, *sources: typing.Self): ...
