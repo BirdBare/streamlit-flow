@@ -62,12 +62,6 @@ const StreamlitFlowComponent = (props) => {
         Streamlit.setComponentValue({'nodes': _nodes, 'edges': _edges, 'selectedId': selectedId, 'timestamp': timestamp});
     }
 
-    const clearMenus = () => {
-        setPaneContextMenu(null);
-        setNodeContextMenu(null);
-        setEdgeContextMenu(null);
-    }
-
     useEffect(() => Streamlit.setFrameHeight());
 
     // Layout calculation
@@ -117,18 +111,15 @@ const StreamlitFlowComponent = (props) => {
     // Flow interaction callbacks
 
     const handlePaneClick = (event) => {
-        clearMenus();
         handleDataReturnToStreamlit(nodes, edges, null);
     }
 
     const handleNodeClick = (event, node) => {
-        clearMenus();
         if (props.args.getNodeOnClick)
             handleDataReturnToStreamlit(nodes, edges, node.id);
     }
 
     const handleEdgeClick = (event, edge) => {
-        clearMenus();
         if (props.args.getEdgeOnClick)
             handleDataReturnToStreamlit(nodes, edges, edge.id);
     }
@@ -166,7 +157,6 @@ const StreamlitFlowComponent = (props) => {
                 style={props.args.style}
                 onNodeClick={handleNodeClick}
                 onEdgeClick={handleEdgeClick}
-                onNodeDragStart={clearMenus}
                 onPaneClick={handlePaneClick}
                 panOnDrag={props.args.panOnDrag}
                 zoomOnDoubleClick={props.args.allowZoom}
