@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useMemo } from "react"
 import {
     Streamlit,
 } from "streamlit-component-lib"
-
+import { v4 as uuidv4 } from 'uuid';
 import ReactFlow, {
     Controls,
     Background,
@@ -21,7 +21,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 import './style.css';
 
-import {MarkdownInputNode, MarkdownOutputNode, MarkdownDefaultNode} from "./components/MarkdownNode";
+import {StreamlitFlowMarkdownNode} from "./components/StreamlitFlowMarkdownNode";
 import PaneConextMenu from "./components/PaneContextMenu";
 import NodeContextMenu from "./components/NodeContextMenu";
 import EdgeContextMenu from "./components/EdgeContextMenu";
@@ -30,7 +30,7 @@ import createElkGraphLayout from "./layouts/ElkLayout";
 
 const StreamlitFlowComponent = (props) => {
 
-    const nodeTypes = useMemo(() => ({ input: MarkdownInputNode, output: MarkdownOutputNode, default: MarkdownDefaultNode}), []);
+    const nodeTypes = useMemo(() => ({StreamlitFlowMarkdownNode: StreamlitFlowMarkdownNode}), []);
     
     const [viewFitAfterLayout, setViewFitAfterLayout] = useState(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(props.args.nodes);
@@ -194,8 +194,8 @@ const StreamlitFlowComponent = (props) => {
 
 
     const handleConnect = (params) => {
-        const newEdgeId = `st-flow-edge_${params.source}-${params.target}`; 
-        const newEdges = addEdge({...params, animated:props.args["animateNewEdges"], labelShowBg:false, id: newEdgeId}, edges);
+        const newEdgeId = uuidv4(); 
+        const newEdges = addEdge({id: newEdgeId, ...params, markerStart: {},markerEnd: {}, label:"",hidden:false, animated:props.args["animateNewEdges"], deletable:true, focusable:true,zIndex:0,style:{},labelStyle:{}}, edges);
         setEdges(newEdges);
         handleDataReturnToStreamlit(nodes, newEdges, newEdgeId);
     }
@@ -212,6 +212,7 @@ const StreamlitFlowComponent = (props) => {
     return (
         <div style={{height: props.args.height}}>
             <ReactFlow
+                connectionMode="loose"
                 nodeTypes={nodeTypes}
                 ref={ref}
                 nodes={nodes}
