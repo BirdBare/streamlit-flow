@@ -22,10 +22,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import './style.css';
 
 import {StreamlitFlowMarkdownNode} from "./components/StreamlitFlowMarkdownNode";
-import PaneConextMenu from "./components/PaneContextMenu";
-import NodeContextMenu from "./components/NodeContextMenu";
-import EdgeContextMenu from "./components/EdgeContextMenu";
-
 import createElkGraphLayout from "./layouts/ElkLayout";
 
 const StreamlitFlowComponent = (props) => {
@@ -227,49 +223,16 @@ const StreamlitFlowComponent = (props) => {
                 onEdgeClick={handleEdgeClick}
                 onNodeDragStart={clearMenus}
                 onPaneClick={handlePaneClick}
-                onPaneContextMenu={props.args.enablePaneMenu ? handlePaneContextMenu : (event) => {}}
-                onNodeContextMenu={props.args.enableNodeMenu ? handleNodeContextMenu : (event, node) => {}}
-                onEdgeContextMenu={props.args.enableEdgeMenu ? handleEdgeContextMenu : (event, edge) => {}}
                 panOnDrag={props.args.panOnDrag}
                 zoomOnDoubleClick={props.args.allowZoom}
                 zoomOnScroll={props.args.allowZoom}
                 zoomOnPinch={props.args.allowZoom}
                 minZoom={props.args.minZoom}
                 proOptions={{hideAttribution: props.args.hideWatermark}}>
-                    <Background/>
-                    {paneContextMenu && <PaneConextMenu 
-                                            paneContextMenu={paneContextMenu} 
-                                            setPaneContextMenu={setPaneContextMenu}
-                                            nodes={nodes} 
-                                            edges={edges} 
-                                            setNodes={setNodes} 
-                                            handleDataReturnToStreamlit={handleDataReturnToStreamlit}
-                                            setLayoutCalculated={setLayoutCalculated}
-                                            theme={props.theme}
-                                            />
-                    }
-                    {nodeContextMenu && <NodeContextMenu 
-                                            nodeContextMenu={nodeContextMenu} 
-                                            setNodeContextMenu={setNodeContextMenu}
-                                            nodes={nodes}
-                                            edges={edges}
-                                            setNodes={setNodes}
-                                            setEdges={setEdges}
-                                            handleDataReturnToStreamlit={handleDataReturnToStreamlit}
-                                            theme={props.theme} 
-                                            />
-                    }
-                    {edgeContextMenu && <EdgeContextMenu 
-                                            edgeContextMenu={edgeContextMenu} 
-                                            setEdgeContextMenu={setEdgeContextMenu} 
-                                            nodes={nodes}
-                                            edges={edges}
-                                            setEdges={setEdges}
-                                            handleDataReturnToStreamlit={handleDataReturnToStreamlit} 
-                                            theme={props.theme}/>}
-                    {props.args["showControls"] && <Controls/>}
-                    {props.args["showMiniMap"] && <MiniMap pannable zoomable/>}
-                </ReactFlow>
+
+            {props.args["showControls"] && <Controls/>}
+            {props.args["showMiniMap"] && <MiniMap pannable zoomable/>}
+            </ReactFlow>
         </div>
     );
 }
