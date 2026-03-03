@@ -35,7 +35,14 @@ class StreamlitFlowHandle:
             self.valid_targets = set()
 
         else:
-            self.valid_targets.add(*[target for target in targets if target is not None])
+            for target in targets:
+                if target is None:
+                    continue
+
+                self.valid_targets.add(target)
+
+                if self not in target.valid_targets:
+                    target.add_valid_targets(self)
 
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
