@@ -65,8 +65,8 @@ class StreamlitFlowHandle:
             "position": self.position,
             "isConnectableStart": self.is_source,
             "isConnectableEnd": self.is_target,
-            "valid_target_ids": None if self.valid_targets is None else [handle.id for handle in self.valid_targets],
-            "valid_source_ids": None if self.valid_sources is None else [handle.id for handle in self.valid_sources],
+            "validTargetIds": None if self.valid_targets is None else [handle.id for handle in self.valid_targets],
+            "validSourceIds": None if self.valid_sources is None else [handle.id for handle in self.valid_sources],
             "style": self.style,
         }
 
