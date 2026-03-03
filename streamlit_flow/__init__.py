@@ -5,12 +5,12 @@ import uuid
 import streamlit.components.v1 as components
 
 from .layouts import Layout, ManualLayout
-from .streamlit_flow_edge import StreamlitFlowEdge
-from .streamlit_flow_handle import StreamlitFlowHandle
-from .streamlit_flow_markdown_node import StreamlitFlowMarkdownNode
-from .streamlit_flow_marker import StreamlitFlowMarker
-from .streamlit_flow_node import StreamlitFlowNode
-from .streamlit_flow_state import StreamlitFlowState
+from .edge import Edge
+from .handle import Handle
+from .markdown_node import MarkdownNode
+from .maarker import Marker
+from .base_node import BaseNode
+from .state import State
 
 _RELEASE = False
 
@@ -28,7 +28,7 @@ else:
 
 def streamlit_flow(
     key: str,
-    state: StreamlitFlowState,
+    state: State,
     *,
     height: int = 500,
     fit_view: bool = False,
@@ -98,7 +98,7 @@ def streamlit_flow(
     # Collect and create the handles at the basic level. Valid handles will be added next
     #
     handle_ids: set[str] = set()
-    handle_by_id: dict[str, StreamlitFlowHandle] = {}
+    handle_by_id: dict[str, Handle] = {}
     handle_dict_by_id: dict[str, dict[str, typing.Any]] = {}
     for node_dict in component_value["nodes"]:
         data = node_dict["data"]
@@ -107,7 +107,7 @@ def streamlit_flow(
             id = handle_dict["id"]
 
             handle_dict_by_id[id] = handle_dict
-            handle_by_id[id] = StreamlitFlowHandle.from_dict(handle_dict)
+            handle_by_id[id] = Handle.from_dict(handle_dict)
 
     #
     # Iterate through to add the valid handles
@@ -123,31 +123,31 @@ def streamlit_flow(
     #
     # Build nodes now that the handles are available
     #
-    node_by_id: dict[str, StreamlitFlowNode] = {}
+    node_by_id: dict[str, BaseNode] = {}
     for node_dict in component_value["nodes"]:
         data = node_dict["data"]
 
         node_dict["data"]["handles"] = [handle_by_id[handle_dict["id"]] for handle_dict in data["handles"]]
 
-        node_by_id[node_dict["id"]] = StreamlitFlowNode.subclass_registry[node_dict["type"]].from_dict(node_dict)
+        node_by_id[node_dict["id"]] = BaseNode.subclass_registry[node_dict["type"]].from_dict(node_dict)
 
     #
     # Build Markers
     #
-    marker_by_id: dict[str, StreamlitFlowMarker] = {}
+    marker_by_id: dict[str, Marker] = {}
     for edge_dict in component_value["edges"]:
         marker_start_dict = edge_dict["markerStart"]
         if "id" in marker_start_dict:
-            marker_by_id[marker_start_dict["id"]] = StreamlitFlowMarker.from_dict(marker_start_dict)
+            marker_by_id[marker_start_dict["id"]] = Marker.from_dict(marker_start_dict)
 
         marker_end_dict = edge_dict["markerEnd"]
         if "id" in marker_end_dict:
-            marker_by_id[marker_end_dict["id"]] = StreamlitFlowMarker.from_dict(marker_end_dict)
+            marker_by_id[marker_end_dict["id"]] = Marker.from_dict(marker_end_dict)
 
     #
     # Build edges now that we have everything built.
     #
-    edge_by_id: dict[str, StreamlitFlowEdge] = {}
+    edge_by_id: dict[str, Edge] = {}
     for edge_dict in component_value["edges"]:
         edge_dict["source_node"] = node_by_id[edge_dict["source"]]
         edge_dict["source_handle"] = handle_by_id[edge_dict["sourceHandle"]]
@@ -165,14 +165,14 @@ def streamlit_flow(
         except KeyError:
             edge_dict["marker_end"] = None
 
-        edge_by_id[edge_dict["id"]] = StreamlitFlowEdge.from_dict(edge_dict)
+        edge_by_id[edge_dict["id"]] = Edge.from_dict(edge_dict)
 
     if component_value["selectedId"] is None:
         selected = None
     else:
         selected = {**node_by_id, **edge_by_id}[component_value["selectedId"]]
 
-    return StreamlitFlowState(
+    return State(
         nodes=list(node_by_id.values()),
         edges=list(edge_by_id.values()),
         selected=selected,

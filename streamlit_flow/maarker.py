@@ -4,7 +4,7 @@ import typing
 import uuid
 
 
-class StreamlitFlowMarker:
+class Marker:
     def __init__(
         self,
         type: typing.Literal["arrow", "arrowclosed"],

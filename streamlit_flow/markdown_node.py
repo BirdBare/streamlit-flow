@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import typing
 
-from .streamlit_flow_handle import StreamlitFlowHandle
-from .streamlit_flow_node import StreamlitFlowNode
+from .base_node import BaseNode
+from .handle import Handle
 
 
-class StreamlitFlowMarkdownNode(StreamlitFlowNode):
+class MarkdownNode(BaseNode):
     def __init__(
         self,
         pos_x: float,
         pos_y: float,
         content: typing.Any,
         *,
-        handles: list[StreamlitFlowHandle] = [],
+        handles: list[Handle] = [],
         hidden: bool = False,
         draggable: bool = True,
         selectable: bool = False,

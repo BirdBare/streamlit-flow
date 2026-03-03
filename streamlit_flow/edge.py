@@ -3,23 +3,23 @@ from __future__ import annotations
 import typing
 import uuid
 
-from .streamlit_flow_handle import StreamlitFlowHandle
-from .streamlit_flow_marker import StreamlitFlowMarker
-from .streamlit_flow_node import StreamlitFlowNode
+from .base_node import BaseNode
+from .handle import Handle
+from .maarker import Marker
 
 
-class StreamlitFlowEdge:
+class Edge:
     def __init__(
         self,
-        source_node: StreamlitFlowNode,
-        source_handle: StreamlitFlowHandle,
-        target_node: StreamlitFlowNode,
-        target_handle: StreamlitFlowHandle,
+        source_node: BaseNode,
+        source_handle: Handle,
+        target_node: BaseNode,
+        target_handle: Handle,
         label: str = "",
         *,
         type: typing.Literal["default", "straight", "step", "smoothstep", "simplebezier"] = "default",
-        marker_start: StreamlitFlowMarker | None = None,  # TODO
-        marker_end: StreamlitFlowMarker | None = None,  # TODO
+        marker_start: Marker | None = None,  # TODO
+        marker_end: Marker | None = None,  # TODO
         hidden: bool = False,
         animated: bool = False,
         deletable: bool = True,

@@ -3,21 +3,21 @@ from __future__ import annotations
 import typing
 import uuid
 
-from .streamlit_flow_handle import StreamlitFlowHandle
+from .handle import Handle
 
 
-class StreamlitFlowNode:
-    subclass_registry: dict[str, type[StreamlitFlowNode]] = {}
+class BaseNode:
+    subclass_registry: dict[str, type[typing.Self]] = {}
 
     def __init_subclass__(cls) -> None:
-        StreamlitFlowNode.subclass_registry[cls.__name__] = cls
+        BaseNode.subclass_registry[cls.__name__] = cls
 
     def __init__(
         self,
         pos_x: float,
         pos_y: float,
         *,
-        handles: list[StreamlitFlowHandle] = [],
+        handles: list[Handle] = [],
         hidden: bool = False,
         draggable: bool = False,
         selectable: bool = False,

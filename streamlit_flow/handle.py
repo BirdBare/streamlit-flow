@@ -4,7 +4,7 @@ import typing
 import uuid
 
 
-class StreamlitFlowHandle:
+class Handle:
     def __init__(
         self,
         position: typing.Literal["top", "bottom", "left", "right"],

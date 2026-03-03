@@ -44,7 +44,7 @@ const StreamlitFlowComponent = (props) => {
     const ref = useRef(null);
     const {fitView, getNodes, getEdges} = useReactFlow();
 
-    const nodeTypes = useMemo(() => ({StreamlitFlowMarkdownNode: (props) => <StreamlitFlowMarkdownNode {...props} connectingNodeId={connectingNodeId} connectingHandleId={connectingHandleId} validTargetHandleIds={validTargetHandleIds}/>,}), [connectingNodeId,connectingHandleId,validTargetHandleIds]);
+    const nodeTypes = useMemo(() => ({MarkdownNode: (props) => <StreamlitFlowMarkdownNode {...props} connectingNodeId={connectingNodeId} connectingHandleId={connectingHandleId} validTargetHandleIds={validTargetHandleIds}/>,}), [connectingNodeId,connectingHandleId,validTargetHandleIds]);
 
     // Helper Functions
     const handleLayout = () => {
