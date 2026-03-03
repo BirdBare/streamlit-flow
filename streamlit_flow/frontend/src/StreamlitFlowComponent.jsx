@@ -32,8 +32,10 @@ const StreamlitFlowComponent = (props) => {
     const [layoutNeedsUpdate, setLayoutNeedsUpdate] = useState(false);
     
 
-    const [connectingSourceHandleId, setConnectingSourceHandleId] = useState(null);
-
+    const [connectingNodeId, setConnectingNodeId] = useState(null)
+    const [connectingHandleId, setConnectingHandleId] = useState(null)
+    const [validTargetHandleIds, setValidTargetHandleIds] = useState(null);
+    
     const [layoutCalculated, setLayoutCalculated] = useState(false);
 
     const nodesInitialized = useNodesInitialized({'includeHiddenNodes': false});
@@ -42,7 +44,7 @@ const StreamlitFlowComponent = (props) => {
     const ref = useRef(null);
     const {fitView, getNodes, getEdges} = useReactFlow();
 
-    const nodeTypes = useMemo(() => ({StreamlitFlowMarkdownNode: (props) => <StreamlitFlowMarkdownNode {...props} connectingSourceHandleId={connectingSourceHandleId} />,}), [connectingSourceHandleId]);
+    const nodeTypes = useMemo(() => ({StreamlitFlowMarkdownNode: (props) => <StreamlitFlowMarkdownNode {...props} connectingNodeId={connectingNodeId} connectingHandleId={connectingHandleId} validTargetHandleIds={validTargetHandleIds}/>,}), [connectingNodeId,connectingHandleId,validTargetHandleIds]);
 
     // Helper Functions
     const handleLayout = () => {
@@ -71,8 +73,6 @@ const StreamlitFlowComponent = (props) => {
         if(nodesInitialized && !layoutCalculated)
             handleLayout();
     }, [nodesInitialized, layoutCalculated]);
-
-
 
     // Update elements if streamlit sends new arguments - check by comparing timestamp recency
     useEffect(() => {
@@ -126,12 +126,20 @@ const StreamlitFlowComponent = (props) => {
             handleDataReturnToStreamlit(nodes, edges, edge.id);
     }
 
-    const handleConnectStart = (_, {handleId}) => {
-        setConnectingSourceHandleId(handleId);
+    const handleConnectStart = (_, {nodeId,handleId}) => {
+        const node = nodes.find(node => node.id === nodeId);
+        const handles = node.data.handles
+        const handle = handles.find(handle => handle.id === handleId);
+
+        setConnectingNodeId(nodeId);
+        setConnectingHandleId(handleId);
+        setValidTargetHandleIds(handle.validTargetIds);
     }
 
     const handleConnectEnd = () => {
-        setConnectingSourceHandleId(null);
+        setConnectingNodeId(null);
+        setConnectingHandleId(null);
+        setValidTargetHandleIds(null);
     }
 
     const handleConnect = (connection) => {

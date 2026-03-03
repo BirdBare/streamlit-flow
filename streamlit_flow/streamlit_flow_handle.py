@@ -10,38 +10,20 @@ class StreamlitFlowHandle:
         position: typing.Literal["top", "bottom", "left", "right"],
         *,
         is_source: bool = True,
-        valid_targets: list[typing.Self] | None = None,  # If is None then all targets are valid
         is_target: bool = True,
-        valid_sources: list[typing.Self] | None = None,  # If is None then all sources are valid
+        valid_targets: list[typing.Self] | None = None,  # If is None then all targets are valid
         style: dict[str, typing.Any] = {},
     ):
         self.id = str(uuid.uuid4())
         self.position = position
         self.is_source = is_source
-        self.valid_targets = valid_targets
         self.is_target = is_target
-        self.valid_sources = valid_sources
+        self.valid_targets = valid_targets
 
         if style == {}:
             self.style = {}
         else:
             self.style = style
-
-    @typing.overload
-    def add_valid_sources(self, *sources: typing.Self): ...
-
-    @typing.overload
-    def add_valid_sources(self, *sources: None): ...
-
-    def add_valid_sources(self, *sources: typing.Self | None):
-        if None in sources:
-            self.valid_sources = None
-
-        else:
-            if self.valid_sources is None:
-                self.valid_sources = []
-
-            self.valid_sources += [source for source in sources if source is not None]
 
     @typing.overload
     def add_valid_targets(self, *targets: typing.Self): ...
@@ -66,7 +48,6 @@ class StreamlitFlowHandle:
             "isConnectableStart": self.is_source,
             "isConnectableEnd": self.is_target,
             "validTargetIds": None if self.valid_targets is None else [handle.id for handle in self.valid_targets],
-            "validSourceIds": None if self.valid_sources is None else [handle.id for handle in self.valid_sources],
             "style": self.style,
         }
 
@@ -80,7 +61,6 @@ class StreamlitFlowHandle:
             is_source=input_dict["isConnectableStart"],
             valid_targets=input_dict["valid_targets"],
             is_target=input_dict["isConnectableEnd"],
-            valid_sources=input_dict["valid_sources"],
             style=input_dict["style"],
         )
 

@@ -1,9 +1,12 @@
 import { Handle, Position } from 'reactflow';
 
-function canRender(connectingSourceHandleId,validSourceIds) {
-    return (connectingSourceHandleId === null || 
-            validSourceIds === null || 
-            validSourceIds.includes(connectingSourceHandleId));
+function canRender(connectingNodeId, nodeId, connectingHandleId, validTargetHandleIds,handleId) {
+    return (
+        (connectingNodeId === null && connectingHandleId === null) ||
+        ((connectingNodeId === nodeId) && (connectingHandleId === handleId)) ||
+        ((connectingNodeId !== nodeId) && (validTargetHandleIds === null)) ||
+        ((connectingNodeId !== nodeId) && (validTargetHandleIds.includes(handleId)))
+        );
 
 }
 
@@ -15,7 +18,7 @@ function positionHandle(position, total_handles, iteration) {
   }
 }
 
-function buildHandles(handles, connectingSourceHandleId) {
+function buildHandles(nodeId, handles, connectingNodeId,connectingHandleId,validTargetHandleIds) {
 
     const top_handles = handles.filter(obj => obj.position === "top")
     const bottom_handles = handles.filter(obj => obj.position === "bottom")
@@ -30,11 +33,11 @@ function buildHandles(handles, connectingSourceHandleId) {
                     key={i}
                     position={Position.Top}
                     isConnectableStart = {handleData.isConnectableStart}
-                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingSourceHandleId,handleData.validSourceIds)}
+                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id)}
                     style={{ 
                         ...handleData.style, 
                         ...positionHandle(Position.Top, top_handles.length, i),
-                        display: canRender(connectingSourceHandleId, handleData.validSourceIds) ? 1 : 0,}}
+                        opacity: canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id) ? 1 : 0,}}
                 />
             ))}
             {[...bottom_handles].map((handleData, i) => (
@@ -43,11 +46,11 @@ function buildHandles(handles, connectingSourceHandleId) {
                     key={i}
                     position={Position.Bottom}
                     isConnectableStart = {handleData.isConnectableStart}
-                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingSourceHandleId,handleData.validSourceIds)}
+                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id)}
                     style={{ 
                         ...handleData.style, 
                         ...positionHandle(Position.Bottom, bottom_handles.length, i),
-                        opacity: canRender(connectingSourceHandleId, handleData.validSourceIds) ? 1 : 0,}}
+                        opacity: canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id) ? 1 : 0,}}
                 />
             ))}
             {[...left_handles].map((handleData, i) => (
@@ -56,11 +59,11 @@ function buildHandles(handles, connectingSourceHandleId) {
                     key={i}
                     position={Position.Left}
                     isConnectableStart = {handleData.isConnectableStart}
-                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingSourceHandleId,handleData.validSourceIds)}
+                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id)}
                     style={{ 
                         ...handleData.style, 
                         ...positionHandle(Position.Left, left_handles.length, i),
-                        opacity: canRender(connectingSourceHandleId, handleData.validSourceIds) ? 1 : 0,}}
+                        opacity: canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id) ? 1 : 0,}}
                 />
             ))}
             {[...right_handles].map((handleData, i) => (
@@ -69,11 +72,11 @@ function buildHandles(handles, connectingSourceHandleId) {
                     key={i}
                     position={Position.Right}
                     isConnectableStart = {handleData.isConnectableStart}
-                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingSourceHandleId,handleData.validSourceIds)}
+                    isConnectableEnd = {handleData.isConnectableEnd && canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id)}
                     style={{ 
                         ...handleData.style, 
                         ...positionHandle(Position.Right, right_handles.length, i),
-                        opacity: canRender(connectingSourceHandleId, handleData.validSourceIds) ? 1 : 0,}}
+                        opacity: canRender(connectingNodeId,nodeId,connectingHandleId,validTargetHandleIds,handleData.id) ? 1 : 0,}}
                 />
             ))}
         </>

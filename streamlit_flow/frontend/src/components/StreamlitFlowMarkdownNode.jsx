@@ -21,11 +21,11 @@ const MemoizedMarkdown = memo(({ content }) => (
     </Markdown>
 ));
 
-const StreamlitFlowMarkdownNode = ({ data, connectingSourceHandleId }) => {    
+const StreamlitFlowMarkdownNode = ({id, data, connectingNodeId,connectingHandleId, validTargetHandleIds }) => {    
 
     return (
         <>
-            {buildHandles(data.handles,connectingSourceHandleId)}
+            {buildHandles(id, data.handles,connectingNodeId,connectingHandleId,validTargetHandleIds)}
 
             <div className="markdown-node react-flow__node-default" style={{width:"auto"}}>
                 <MemoizedMarkdown content={data.content} />

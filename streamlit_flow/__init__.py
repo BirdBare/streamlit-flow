@@ -107,7 +107,6 @@ def streamlit_flow(
             id = handle_dict["id"]
 
             handle_dict["valid_targets"] = None
-            handle_dict["valid_sources"] = None
 
             handle_dict_by_id[id] = handle_dict
             handle_by_id[id] = StreamlitFlowHandle.from_dict(handle_dict)
@@ -118,10 +117,6 @@ def streamlit_flow(
     for id in handle_ids:
         handle = handle_by_id[id]
         handle_dict = handle_dict_by_id[id]
-
-        valid_source_ids = handle_dict["validSourceIds"]
-        if valid_source_ids is not None:
-            handle.valid_sources = [handle_by_id[valid_id] for valid_id in valid_source_ids]
 
         valid_target_ids = handle_dict["validTargetIds"]
         if valid_target_ids is not None:
