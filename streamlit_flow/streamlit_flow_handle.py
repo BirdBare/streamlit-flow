@@ -11,14 +11,13 @@ class StreamlitFlowHandle:
         *,
         is_source: bool = True,
         is_target: bool = True,
-        valid_targets: list[typing.Self] | None = None,  # If is None then all targets are valid
         style: dict[str, typing.Any] = {},
     ):
         self.id = str(uuid.uuid4())
         self.position = position
         self.is_source = is_source
         self.is_target = is_target
-        self.valid_targets = valid_targets
+        self.valid_targets: set[typing.Self] = set()
 
         if style == {}:
             self.style = {}
@@ -33,13 +32,10 @@ class StreamlitFlowHandle:
 
     def add_valid_targets(self, *targets: typing.Self | None):
         if None in targets:
-            self.valid_targets = None
+            self.valid_targets = set()
 
         else:
-            if self.valid_targets is None:
-                self.valid_targets = []
-
-            self.valid_targets += [target for target in targets if target is not None]
+            self.valid_targets.add(*[target for target in targets if target is not None])
 
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
@@ -47,7 +43,7 @@ class StreamlitFlowHandle:
             "position": self.position,
             "isConnectableStart": self.is_source,
             "isConnectableEnd": self.is_target,
-            "validTargetIds": None if self.valid_targets is None else [handle.id for handle in self.valid_targets],
+            "validTargetIds": [handle.id for handle in self.valid_targets],
             "style": self.style,
         }
 
@@ -59,7 +55,6 @@ class StreamlitFlowHandle:
         instance = cls(
             position=input_dict["position"],
             is_source=input_dict["isConnectableStart"],
-            valid_targets=input_dict["valid_targets"],
             is_target=input_dict["isConnectableEnd"],
             style=input_dict["style"],
         )

@@ -106,8 +106,6 @@ def streamlit_flow(
         for handle_dict in data["handles"]:
             id = handle_dict["id"]
 
-            handle_dict["valid_targets"] = None
-
             handle_dict_by_id[id] = handle_dict
             handle_by_id[id] = StreamlitFlowHandle.from_dict(handle_dict)
 
@@ -120,7 +118,7 @@ def streamlit_flow(
 
         valid_target_ids = handle_dict["validTargetIds"]
         if valid_target_ids is not None:
-            handle.valid_targets = [handle_by_id[valid_id] for valid_id in valid_target_ids]
+            handle.valid_targets.add(*[handle_by_id[valid_id] for valid_id in valid_target_ids])
 
     #
     # Build nodes now that the handles are available

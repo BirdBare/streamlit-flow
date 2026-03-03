@@ -4,10 +4,9 @@ function canRender(connectingNodeId, nodeId, connectingHandleId, validTargetHand
     return (
         (connectingNodeId === null && connectingHandleId === null) ||
         ((connectingNodeId === nodeId) && (connectingHandleId === handleId)) ||
-        ((connectingNodeId !== nodeId) && (validTargetHandleIds === null)) ||
+        ((connectingNodeId !== nodeId) && (validTargetHandleIds.length === 0)) ||
         ((connectingNodeId !== nodeId) && (validTargetHandleIds.includes(handleId)))
         );
-
 }
 
 function positionHandle(position, total_handles, iteration) {
