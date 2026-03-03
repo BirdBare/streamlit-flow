@@ -17,7 +17,7 @@ if "state" not in streamlit.session_state:
     edge = streamlit_flow.Edge(node_1, handle_1, node_2, handle_4)
     state.edges.append(edge)
 
-state = streamlit.session_state["state"] = streamlit_flow.streamlit_flow(
+state = streamlit.session_state["state"] = streamlit_flow.render(
     "A",
     streamlit.session_state["state"],
     allow_new_edges=True,

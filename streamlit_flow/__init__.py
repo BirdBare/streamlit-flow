@@ -4,15 +4,15 @@ import uuid
 
 import streamlit.components.v1 as components
 
-from .layouts import Layout, ManualLayout
+from .base_node import BaseNode
 from .edge import Edge
 from .handle import Handle
-from .markdown_node import MarkdownNode
+from .layouts import Layout, ManualLayout
 from .maarker import Marker
-from .base_node import BaseNode
+from .markdown_node import MarkdownNode
 from .state import State
 
-_RELEASE = False
+_RELEASE = True
 
 if not _RELEASE:
     _st_flow_func = components.declare_component(
@@ -26,7 +26,7 @@ else:
     _st_flow_func = components.declare_component("streamlit_flow", path=build_dir)
 
 
-def streamlit_flow(
+def render(
     key: str,
     state: State,
     *,
