@@ -24,23 +24,25 @@ import './style.css';
 import {StreamlitFlowMarkdownNode} from "./components/StreamlitFlowMarkdownNode";
 import createElkGraphLayout from "./layouts/ElkLayout";
 
-const StreamlitFlowComponent = (props) => {
-
-    const nodeTypes = useMemo(() => ({StreamlitFlowMarkdownNode: StreamlitFlowMarkdownNode}), []);
-    
+const StreamlitFlowComponent = (props) => {    
     const [viewFitAfterLayout, setViewFitAfterLayout] = useState(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(props.args.nodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(props.args.edges);
     const [lastUpdateTimestamp, setLastUpdateTimestamp] = useState(props.args.timestamp);
     const [layoutNeedsUpdate, setLayoutNeedsUpdate] = useState(false);
+    
+
+    const [connectingSourceHandleId, setConnectingSourceHandleId] = useState(null);
 
     const [layoutCalculated, setLayoutCalculated] = useState(false);
 
     const nodesInitialized = useNodesInitialized({'includeHiddenNodes': false});
 
+
     const ref = useRef(null);
-    const reactFlowInstance = useReactFlow();
     const {fitView, getNodes, getEdges} = useReactFlow();
+
+    const nodeTypes = useMemo(() => ({StreamlitFlowMarkdownNode: (props) => <StreamlitFlowMarkdownNode {...props} connectingSourceHandleId={connectingSourceHandleId} />,}), [connectingSourceHandleId]);
 
     // Helper Functions
     const handleLayout = () => {
@@ -124,10 +126,42 @@ const StreamlitFlowComponent = (props) => {
             handleDataReturnToStreamlit(nodes, edges, edge.id);
     }
 
+    const handleConnectStart = (_, {handleId}) => {
+        setConnectingSourceHandleId(handleId);
+    }
 
-    const handleConnect = (params) => {
+    const handleConnectEnd = () => {
+        setConnectingSourceHandleId(null);
+    }
+
+    const handleConnect = (connection) => {
+
+        const { source, sourceHandle, target, targetHandle } = connection;
+
+        //check if new edge will be a bidirectional duplicate
+        const connection_exists = edges.some((edge) => {
+            const forward =
+            edge.source === source &&
+            edge.sourceHandle === sourceHandle &&
+            edge.target === target &&
+            edge.targetHandle === targetHandle;
+
+            const reverse =
+            edge.source === target &&
+            edge.sourceHandle === targetHandle &&
+            edge.target === source &&
+            edge.targetHandle === sourceHandle;
+
+            return forward || reverse;
+        });
+
+        if (connection_exists) {
+            handleDataReturnToStreamlit(nodes, edges, null);
+            return;
+        }
+
         const newEdgeId = uuidv4(); 
-        const newEdges = addEdge({id: newEdgeId, ...params, type:props.args["typeOfNewEdges"], markerStart: {},markerEnd: {}, label:"",hidden:false, animated:props.args["animateNewEdges"], deletable:true, focusable:true,zIndex:0,style:{},labelStyle:{}}, edges);
+        const newEdges = addEdge({id: newEdgeId, ...connection, type:props.args["typeOfNewEdges"], markerStart: {},markerEnd: {}, label:"",hidden:false, animated:props.args["animateNewEdges"], deletable:true, focusable:true,zIndex:0,style:{},labelStyle:{}}, edges);
         setEdges(newEdges);
         handleDataReturnToStreamlit(nodes, newEdges, newEdgeId);
     }
@@ -152,6 +186,8 @@ const StreamlitFlowComponent = (props) => {
                 onNodeDragStop={handleNodeDragStop}
                 edges={edges}
                 onEdgesChange={onEdgesChange}
+                onConnectStart={handleConnectStart}
+                onConnectEnd={handleConnectEnd}
                 onConnect={props.args.allowNewEdges ? handleConnect : null}
                 fitView={props.args.fitView}
                 style={props.args.style}
