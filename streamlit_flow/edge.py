@@ -57,6 +57,9 @@ class Edge:
         else:
             self.label_style = label_style
 
+    def __eq__(self, value) -> bool:
+        return self.id == value.id
+
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
             "id": self.id,
