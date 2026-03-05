@@ -63,6 +63,9 @@ class Edge:
         except AttributeError:
             return False
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
             "id": self.id,

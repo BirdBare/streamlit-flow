@@ -32,6 +32,9 @@ class Marker:
             return self.id == value.id
         except AttributeError:
             return False
+        
+    def __hash__(self) -> int:
+        return hash(self.id)
 
     @classmethod
     def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:

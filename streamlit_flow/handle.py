@@ -30,6 +30,9 @@ class Handle:
         except AttributeError:
             return False
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
     @typing.overload
     def add_valid_targets(self, *targets: typing.Self): ...
 
