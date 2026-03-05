@@ -28,7 +28,10 @@ class Marker:
         return output_dict
 
     def __eq__(self, value) -> bool:
-        return self.id == value.id
+        try:
+            return self.id == value.id
+        except AttributeError:
+            return False
 
     @classmethod
     def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
