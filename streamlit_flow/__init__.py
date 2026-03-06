@@ -8,11 +8,11 @@ from .base_node import BaseNode
 from .edge import Edge
 from .handle import Handle
 from .layouts import Layout, ManualLayout
-from .maarker import Marker
 from .markdown_node import MarkdownNode
+from .marker import Marker
 from .state import State
 
-_RELEASE = True
+_RELEASE = False
 
 if not _RELEASE:
     _st_flow_func = components.declare_component(
@@ -94,6 +94,10 @@ def render(
     if component_value is None:
         return state
 
+    import json
+
+    print(json.dumps(component_value["nodes"], indent=2))
+
     #
     # Collect and create the handles at the basic level. Valid handles will be added next
     #
@@ -116,9 +120,7 @@ def render(
         handle = handle_by_id[id]
         handle_dict = handle_dict_by_id[id]
 
-        valid_target_ids = handle_dict["validTargetIds"]
-        if valid_target_ids is not None:
-            handle.valid_targets.add(*[handle_by_id[valid_id] for valid_id in valid_target_ids])
+        handle.valid_targets.add(*[handle_by_id[valid_id] for valid_id in handle_dict["validTargetIds"]])
 
     #
     # Build nodes now that the handles are available

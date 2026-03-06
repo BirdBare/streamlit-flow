@@ -5,7 +5,7 @@ import uuid
 
 from .base_node import BaseNode
 from .handle import Handle
-from .maarker import Marker
+from .marker import Marker
 
 
 class Edge:
