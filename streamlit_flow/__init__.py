@@ -12,7 +12,7 @@ from .layouts import Layout, ManualLayout
 from .markdown_node import MarkdownNode
 from .marker import Marker
 
-_RELEASE = False
+_RELEASE = True
 
 if not _RELEASE:
     _st_flow_func = components.declare_component(
