@@ -128,9 +128,6 @@ def render(
 
         output_nodes.add(node)
 
-        for handle_id in node.handle_ids:
-            output_handles.add(handle_by_id[str(handle_id)])
-
     output_edges: set[Edge] = set()
     output_markers: set[Marker] = set()
     for edge_dict in component_value["edges"]:
@@ -143,14 +140,6 @@ def render(
 
         output_edges.add(edge)
 
-        marker_id = edge.source_marker_id
-        if marker_id is not None:
-            output_markers.add(marker_by_id[str(marker_id)])
-
-        marker_id = edge.target_marker_id
-        if marker_id is not None:
-            output_markers.add(marker_by_id[str(marker_id)])
-
     selected_id = component_value["selectedId"]
     if selected_id is not None:
         selected_id = uuid.UUID(selected_id)
@@ -158,8 +147,8 @@ def render(
     return Diagram(
         nodes=list(output_nodes),
         edges=list(output_edges),
-        handles=list(output_handles),
-        markers=list(output_markers),
+        handles=diagram.handles,
+        markers=diagram.markers,
         selected_id=selected_id,
         timestamp=component_value["timestamp"],
     )
