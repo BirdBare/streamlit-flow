@@ -83,11 +83,11 @@ def render(
     for edge_dict in edge_dicts:
         marker_id = edge_dict["markerStartId"]
         if marker_id is not None:
-            edge_dict["markerStart"] = marker_by_id[marker_id].as_dict()
+            edge_dict["markerStart"] = marker_by_id[str(marker_id)].as_dict()
 
         marker_id = edge_dict["markerEndId"]
         if marker_id is not None:
-            edge_dict["markerEnd"] = marker_by_id[edge_dict[marker_id]].as_dict()
+            edge_dict["markerEnd"] = marker_by_id[edge_dict[str(marker_id)]].as_dict()
 
     component_value = _st_flow_func(
         nodes=node_dicts,
