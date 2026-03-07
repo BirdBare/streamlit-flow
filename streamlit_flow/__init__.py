@@ -5,12 +5,12 @@ import uuid
 import streamlit.components.v1 as components
 
 from .base_node import BaseNode
+from .diagram import Diagram
 from .edge import Edge
 from .handle import Handle
 from .layouts import Layout, ManualLayout
 from .markdown_node import MarkdownNode
 from .marker import Marker
-from .state import State
 
 _RELEASE = False
 
@@ -28,7 +28,7 @@ else:
 
 def render(
     key: str,
-    state: State,
+    diagram: Diagram,
     *,
     height: int = 500,
     fit_view: bool = False,
@@ -68,9 +68,30 @@ def render(
     - **hide_watermark** : bool : Whether to hide the watermark.
 
     """
+    node_by_id: dict[str, BaseNode] = {str(node.id): node for node in diagram.nodes}
+    handle_by_id: dict[str, Handle] = {str(handle.id): handle for handle in diagram.handles}
+    edge_by_id: dict[str, Edge] = {str(edge.id): edge for edge in diagram.edges}
+    marker_by_id: dict[str, Marker] = {str(marker.id): marker for marker in diagram.markers}
+
+    node_dicts = [node.as_dict() for node in diagram.nodes]
+    for node_dict in node_dicts:
+        node_dict["data"]["handles"] = [
+            handle_by_id[handle_id].as_dict() for handle_id in node_dict["data"]["handleIds"]
+        ]
+
+    edge_dicts = [edge.as_dict() for edge in diagram.edges]
+    for edge_dict in edge_dicts:
+        marker_id = edge_dict["markerStartId"]
+        if marker_id is not None:
+            edge_dict["markerStart"] = marker_by_id[marker_id].as_dict()
+
+        marker_id = edge_dict["markerEndId"]
+        if marker_id is not None:
+            edge_dict["markerEnd"] = marker_by_id[edge_dict[marker_id]].as_dict()
+
     component_value = _st_flow_func(
-        nodes=[node.as_dict() for node in state.nodes],
-        edges=[edge.as_dict() for edge in state.edges],
+        nodes=node_dicts,
+        edges=edge_dicts,
         height=height,
         showControls=show_controls,
         fitView=fit_view,
@@ -87,96 +108,57 @@ def render(
         minZoom=min_zoom,
         hideWatermark=hide_watermark,
         key=key,
-        timestamp=state.timestamp,
+        timestamp=diagram.timestamp,
         component="streamlit_flow",
     )
 
     if component_value is None:
-        return state
+        return diagram
 
-    import json
-
-    print(json.dumps(component_value["nodes"], indent=2))
-
-    #
-    # Collect and create the handles at the basic level. Valid handles will be added next
-    #
-    handle_ids: set[str] = set()
-    handle_by_id: dict[str, Handle] = {}
-    handle_dict_by_id: dict[str, dict[str, typing.Any]] = {}
+    output_nodes: set[BaseNode] = set()
+    output_handles: set[Handle] = set()
     for node_dict in component_value["nodes"]:
-        data = node_dict["data"]
-
-        for handle_dict in data["handles"]:
-            id = handle_dict["id"]
-
-            handle_dict_by_id[id] = handle_dict
-            handle_by_id[id] = Handle.from_dict(handle_dict)
-
-    #
-    # Iterate through to add the valid handles
-    #
-    for id in handle_ids:
-        handle = handle_by_id[id]
-        handle_dict = handle_dict_by_id[id]
-
-        handle.valid_targets.add(*[handle_by_id[valid_id] for valid_id in handle_dict["validTargetIds"]])
-
-    #
-    # Build nodes now that the handles are available
-    #
-    node_by_id: dict[str, BaseNode] = {}
-    for node_dict in component_value["nodes"]:
-        data = node_dict["data"]
-
-        node_dict["data"]["handles"] = [handle_by_id[handle_dict["id"]] for handle_dict in data["handles"]]
-
-        node_by_id[node_dict["id"]] = BaseNode.subclass_registry[node_dict["type"]].from_dict(node_dict)
-
-    #
-    # Build Markers
-    #
-    marker_by_id: dict[str, Marker] = {}
-    for edge_dict in component_value["edges"]:
-        marker_start_dict = edge_dict["markerStart"]
-        if "id" in marker_start_dict:
-            marker_by_id[marker_start_dict["id"]] = Marker.from_dict(marker_start_dict)
-
-        marker_end_dict = edge_dict["markerEnd"]
-        if "id" in marker_end_dict:
-            marker_by_id[marker_end_dict["id"]] = Marker.from_dict(marker_end_dict)
-
-    #
-    # Build edges now that we have everything built.
-    #
-    edge_by_id: dict[str, Edge] = {}
-    for edge_dict in component_value["edges"]:
-        edge_dict["source_node"] = node_by_id[edge_dict["source"]]
-        edge_dict["source_handle"] = handle_by_id[edge_dict["sourceHandle"]]
-
-        edge_dict["target_node"] = node_by_id[edge_dict["target"]]
-        edge_dict["target_handle"] = handle_by_id[edge_dict["targetHandle"]]
-
+        node_id = node_dict["id"]
         try:
-            edge_dict["marker_start"] = marker_by_id[edge_dict["markerStart"]["id"]]
+            node = node_by_id[node_id]
+            node.update_from_dict(node_dict)
         except KeyError:
-            edge_dict["marker_start"] = None
+            node = BaseNode.subclass_registry[node_dict["type"]].from_dict(node_dict)
 
+        output_nodes.add(node)
+
+        for handle_id in node.handle_ids:
+            output_handles.add(handle_by_id[str(handle_id)])
+
+    output_edges: set[Edge] = set()
+    output_markers: set[Marker] = set()
+    for edge_dict in component_value["edges"]:
+        edge_id = edge_dict["id"]
         try:
-            edge_dict["marker_end"] = marker_by_id[edge_dict["markerEnd"]["id"]]
+            edge = edge_by_id[edge_id]
+            edge.update_from_dict(edge_dict)
         except KeyError:
-            edge_dict["marker_end"] = None
+            edge = Edge.from_dict(edge_dict)
 
-        edge_by_id[edge_dict["id"]] = Edge.from_dict(edge_dict)
+        output_edges.add(edge)
 
-    if component_value["selectedId"] is None:
-        selected = None
-    else:
-        selected = {**node_by_id, **edge_by_id}[component_value["selectedId"]]
+        marker_id = edge.source_marker_id
+        if marker_id is not None:
+            output_markers.add(marker_by_id[str(marker_id)])
 
-    return State(
-        nodes=list(node_by_id.values()),
-        edges=list(edge_by_id.values()),
-        selected=selected,
+        marker_id = edge.target_marker_id
+        if marker_id is not None:
+            output_markers.add(marker_by_id[str(marker_id)])
+
+    selected_id = component_value["selectedId"]
+    if selected_id is not None:
+        selected_id = uuid.UUID(selected_id)
+
+    return Diagram(
+        nodes=list(output_nodes),
+        edges=list(output_edges),
+        handles=list(output_handles),
+        markers=list(output_markers),
+        selected_id=selected_id,
         timestamp=component_value["timestamp"],
     )

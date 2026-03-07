@@ -1,25 +1,22 @@
 from __future__ import annotations
 
+import contextlib
 import typing
 import uuid
-
-from .base_node import BaseNode
-from .handle import Handle
-from .marker import Marker
 
 
 class Edge:
     def __init__(
         self,
-        source_node: BaseNode,
-        source_handle: Handle,
-        target_node: BaseNode,
-        target_handle: Handle,
+        source_node_id: uuid.UUID,
+        source_handle_id: uuid.UUID,
+        target_node_id: uuid.UUID,
+        target_handle_id: uuid.UUID,
         label: str = "",
         *,
         type: typing.Literal["default", "straight", "step", "smoothstep", "simplebezier"] = "default",
-        marker_start: Marker | None = None,  # TODO
-        marker_end: Marker | None = None,  # TODO
+        source_marker_id: uuid.UUID | None = None,  # TODO
+        target_marker_id: uuid.UUID | None = None,  # TODO
         hidden: bool = False,
         animated: bool = False,
         deletable: bool = True,
@@ -29,18 +26,15 @@ class Edge:
         label_style: dict[str, typing.Any] = {},
     ) -> None:
 
-        assert source_handle in source_node.handles, "source_handle is not a valid handle for source_node"
-        assert target_handle in target_node.handles, "source_handle is not a valid handle for source_node"
-
-        self.id = str(uuid.uuid4())
-        self.source_node = source_node
-        self.source_handle = source_handle
-        self.target_node = target_node
-        self.target_handle = target_handle
+        self.id = uuid.uuid4()
+        self.source_node_id = source_node_id
+        self.source_handle_id = source_handle_id
+        self.target_node_id = target_node_id
+        self.target_handle_id = target_handle_id
         self.label = label
         self.type = type
-        self.marker_start = marker_start
-        self.marker_end = marker_end
+        self.source_marker_id = source_marker_id
+        self.target_marker_id = target_marker_id
         self.hidden = hidden
         self.animated = animated
         self.deletable = deletable
@@ -68,15 +62,15 @@ class Edge:
 
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
-            "id": self.id,
-            "source": self.source_node.id,
-            "sourceHandle": self.source_handle.id,
-            "target": self.target_node.id,
-            "targetHandle": self.target_handle.id,
+            "id": str(self.id),
+            "source": str(self.source_node_id),
+            "sourceHandle": str(self.source_handle_id),
+            "target": str(self.target_node_id),
+            "targetHandle": str(self.target_handle_id),
             "label": self.label,
             "type": self.type,
-            "markerStart": {} if self.marker_start is None else self.marker_start.as_dict(),
-            "markerEnd": {} if self.marker_end is None else self.marker_end.as_dict(),
+            "markerStartId": str(self.source_marker_id) if self.source_marker_id is not None else None,
+            "markerEndId": str(self.target_marker_id) if self.target_marker_id is not None else None,
             "hidden": self.hidden,
             "animated": self.animated,
             "deletable": self.deletable,
@@ -91,27 +85,67 @@ class Edge:
     @classmethod
     def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
         instance = cls(
-            source_node=input_dict["source_node"],
-            source_handle=input_dict["source_handle"],
-            target_node=input_dict["target_node"],
-            target_handle=input_dict["target_handle"],
-            label=input_dict["label"],
-            type=input_dict["type"],
-            marker_start=input_dict["marker_start"],
-            marker_end=input_dict["marker_end"],
-            hidden=input_dict["hidden"],
-            animated=input_dict["animated"],
-            deletable=input_dict["deletable"],
-            focusable=input_dict["focusable"],
-            z_index=input_dict["zIndex"],
-            style=input_dict["style"],
-            label_style=input_dict["labelStyle"],
+            source_node_id=uuid.UUID(input_dict["source"]),
+            source_handle_id=uuid.UUID(input_dict["sourceHandle"]),
+            target_node_id=uuid.UUID(input_dict["target"]),
+            target_handle_id=uuid.UUID(input_dict["targetHandle"]),
+            label=input_dict.get("label", ""),
+            type=input_dict.get("type", "default"),
+            source_marker_id=uuid.UUID(input_dict.get("markerStartId"))
+            if input_dict.get("markerStartId") is not None
+            else None,
+            target_marker_id=uuid.UUID(input_dict.get("markerEndId"))
+            if input_dict.get("markerEndId") is not None
+            else None,
+            hidden=input_dict.get("hidden", False),
+            animated=input_dict.get("animated", False),
+            deletable=input_dict.get("deletable", True),
+            focusable=input_dict.get("focusable", True),
+            z_index=input_dict.get("zIndex", 0),
+            style=input_dict.get("style", {}),
+            label_style=input_dict.get("labelStyle", {}),
         )
 
         if "id" in input_dict:
-            instance.id = input_dict["id"]
+            instance.id = uuid.UUID(input_dict["id"])
 
         return instance
 
+    def update_from_dict(self, input_dict: dict[str, typing.Any]):
+        with contextlib.suppress(KeyError):
+            self.source_node_id = uuid.UUID(input_dict["source"])
+        with contextlib.suppress(KeyError):
+            self.source_handle_id = uuid.UUID(input_dict["sourceHandle"])
+        with contextlib.suppress(KeyError):
+            self.target_node_id = uuid.UUID(input_dict["target"])
+        with contextlib.suppress(KeyError):
+            self.target_handle_id = uuid.UUID(input_dict["targetHandle"])
+        with contextlib.suppress(KeyError):
+            self.label = input_dict["label"]
+        with contextlib.suppress(KeyError):
+            self.type = input_dict["type"]
+        with contextlib.suppress(KeyError):
+            self.source_marker_id = (
+                uuid.UUID(input_dict["markerStartId"]) if input_dict["markerStartId"] is not None else None
+            )
+        with contextlib.suppress(KeyError):
+            self.target_marker_id = (
+                uuid.UUID(input_dict["markerEndId"]) if input_dict["markerEndId"] is not None else None
+            )
+        with contextlib.suppress(KeyError):
+            self.hidden = input_dict["hidden"]
+        with contextlib.suppress(KeyError):
+            self.animated = input_dict["animated"]
+        with contextlib.suppress(KeyError):
+            self.deletable = input_dict["deletable"]
+        with contextlib.suppress(KeyError):
+            self.focusable = input_dict["focusable"]
+        with contextlib.suppress(KeyError):
+            self.z_index = input_dict["zIndex"]
+        with contextlib.suppress(KeyError):
+            self.style = input_dict["style"]
+        with contextlib.suppress(KeyError):
+            self.label_style = input_dict["labelStyle"]
+
     def __repr__(self):
-        return f"StreamlitFlowEdge({self.id}, {self.source_node}:{self.source_handle}->{self.target_node}:{self.target_handle}, '{self.label}')"
+        return f"StreamlitFlowEdge({self.id}, {self.source_node_id}:{self.source_handle_id}->{self.target_node_id}:{self.target_handle_id}, '{self.label}')"

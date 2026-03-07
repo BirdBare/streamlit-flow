@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import typing
 import uuid
 
@@ -11,13 +12,18 @@ class Handle:
         *,
         is_source: bool = True,
         is_target: bool = True,
+        valid_target_ids: set[uuid.UUID] = set(),
         style: dict[str, typing.Any] = {},
     ):
-        self.id = str(uuid.uuid4())
+        self.id = uuid.uuid4()
         self.position = position
         self.is_source = is_source
         self.is_target = is_target
-        self.valid_targets: set[typing.Self] = set()
+
+        if valid_target_ids == set():
+            self.valid_target_ids = set()
+        else:
+            self.valid_target_ids = valid_target_ids
 
         if style == {}:
             self.style = {}
@@ -34,32 +40,29 @@ class Handle:
         return hash(self.id)
 
     @typing.overload
-    def add_valid_targets(self, *targets: typing.Self): ...
+    def add_valid_targets(self, *targets: uuid.UUID): ...
 
     @typing.overload
     def add_valid_targets(self, *targets: None): ...
 
-    def add_valid_targets(self, *targets: typing.Self | None):
+    def add_valid_targets(self, *targets: uuid.UUID | None):
         if None in targets:
-            self.valid_targets = set()
+            self.valid_target_ids = set()
 
         else:
             for target in targets:
                 if target is None:
                     continue
 
-                self.valid_targets.add(target)
-
-                if self not in target.valid_targets:
-                    target.add_valid_targets(self)
+                self.valid_target_ids.add(target)
 
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
-            "id": self.id,
+            "id": str(self.id),
             "position": self.position,
             "isConnectableStart": self.is_source,
             "isConnectableEnd": self.is_target,
-            "validTargetIds": [handle.id for handle in self.valid_targets],
+            "validTargetIds": [str(valid_target_id) for valid_target_id in self.valid_target_ids],
             "style": self.style,
         }
 
@@ -69,16 +72,29 @@ class Handle:
     def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
 
         instance = cls(
-            position=input_dict["position"],
-            is_source=input_dict["isConnectableStart"],
-            is_target=input_dict["isConnectableEnd"],
-            style=input_dict["style"],
+            position=input_dict.get("position", "top"),
+            is_source=input_dict.get("isConnectableStart", True),
+            is_target=input_dict.get("isConnectableEnd", True),
+            valid_target_ids={uuid.UUID(target_id) for target_id in input_dict.get("validTargetIds", [])},
+            style=input_dict.get("style", {}),
         )
 
         if "id" in input_dict:
-            instance.id = input_dict["id"]
+            instance.id = uuid.UUID(input_dict["id"])
 
         return instance
+
+    def update_from_dict(self, input_dict: dict[str, typing.Any]):
+        with contextlib.suppress(KeyError):
+            self.position = input_dict["position"]
+        with contextlib.suppress(KeyError):
+            self.is_source = input_dict["isConnectableStart"]
+        with contextlib.suppress(KeyError):
+            self.is_target = input_dict["isConnectableEnd"]
+        with contextlib.suppress(KeyError):
+            self.valid_target_ids = {uuid.UUID(target_id) for target_id in input_dict["validTargetIds"]}
+        with contextlib.suppress(KeyError):
+            self.style = input_dict["style"]
 
     def __repr__(self):
         return f"StreamlitFlowHandle({self.id}, {self.position}, {self.is_source}, {self.is_target})"

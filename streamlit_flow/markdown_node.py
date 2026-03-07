@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import contextlib
 import typing
+import uuid
 
 from .base_node import BaseNode
-from .handle import Handle
 
 
 class MarkdownNode(BaseNode):
@@ -13,7 +14,7 @@ class MarkdownNode(BaseNode):
         pos_y: float,
         content: typing.Any,
         *,
-        handles: list[Handle] = [],
+        handle_ids: set[uuid.UUID] = set(),
         hidden: bool = False,
         draggable: bool = True,
         selectable: bool = False,
@@ -25,7 +26,7 @@ class MarkdownNode(BaseNode):
         super().__init__(
             pos_x=pos_x,
             pos_y=pos_y,
-            handles=handles,
+            handle_ids=handle_ids,
             hidden=hidden,
             draggable=draggable,
             selectable=selectable,
@@ -45,24 +46,30 @@ class MarkdownNode(BaseNode):
 
     @classmethod
     def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
+
         instance = cls(
-            pos_x=input_dict["position"]["x"],
-            pos_y=input_dict["position"]["y"],
-            content=input_dict["data"]["content"],
-            handles=input_dict["data"]["handles"],
-            hidden=input_dict["hidden"],
-            draggable=input_dict["draggable"],
-            selectable=input_dict["selectable"],
-            deletable=input_dict["deletable"],
-            z_index=input_dict["zIndex"],
-            focusable=input_dict["focusable"],
-            style=input_dict["style"],
+            pos_x=input_dict.get("position", {}).get("x", 0),
+            pos_y=input_dict.get("position", {}).get("y", 0),
+            content=input_dict.get("data", {}).get("content", ""),
+            handle_ids={uuid.UUID(handle_id) for handle_id in input_dict.get("data", {}).get("handleIds", [])},
+            hidden=input_dict.get("hidden", False),
+            draggable=input_dict.get("draggable", False),
+            selectable=input_dict.get("selectable", False),
+            deletable=input_dict.get("deletable", False),
+            z_index=input_dict.get("zIndex", False),
+            focusable=input_dict.get("focusable", False),
+            style=input_dict.get("style", {}),
         )
 
         if "id" in input_dict:
-            instance.id = input_dict["id"]
+            instance.id = uuid.UUID(input_dict["id"])
 
         return instance
+
+    def update_from_dict(self, input_dict: dict[str, typing.Any]):
+        super().update_from_dict(input_dict)
+        with contextlib.suppress(KeyError):
+            self.content = input_dict["data"]["content"]
 
     def __repr__(self):
         return (
