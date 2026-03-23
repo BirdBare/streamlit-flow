@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import contextlib
 import typing
-import uuid
 
 from .base_node import BaseNode
+from .handle import Handle
 
 
 class MarkdownNode(BaseNode):
@@ -14,7 +14,7 @@ class MarkdownNode(BaseNode):
         pos_y: float,
         content: typing.Any,
         *,
-        handle_ids: set[uuid.UUID] = set(),
+        handles: set[Handle] = set(),
         hidden: bool = False,
         draggable: bool = True,
         selectable: bool = False,
@@ -26,7 +26,7 @@ class MarkdownNode(BaseNode):
         super().__init__(
             pos_x=pos_x,
             pos_y=pos_y,
-            handle_ids=handle_ids,
+            handles=handles,
             hidden=hidden,
             draggable=draggable,
             selectable=selectable,
@@ -43,28 +43,6 @@ class MarkdownNode(BaseNode):
         output_dict["data"]["content"] = self.content
 
         return output_dict
-
-    @classmethod
-    def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
-
-        instance = cls(
-            pos_x=input_dict.get("position", {}).get("x", 0),
-            pos_y=input_dict.get("position", {}).get("y", 0),
-            content=input_dict.get("data", {}).get("content", ""),
-            handle_ids={uuid.UUID(handle_id) for handle_id in input_dict.get("data", {}).get("handleIds", [])},
-            hidden=input_dict.get("hidden", False),
-            draggable=input_dict.get("draggable", False),
-            selectable=input_dict.get("selectable", False),
-            deletable=input_dict.get("deletable", False),
-            z_index=input_dict.get("zIndex", False),
-            focusable=input_dict.get("focusable", False),
-            style=input_dict.get("style", {}),
-        )
-
-        if "id" in input_dict:
-            instance.id = uuid.UUID(input_dict["id"])
-
-        return instance
 
     def update_from_dict(self, input_dict: dict[str, typing.Any]):
         super().update_from_dict(input_dict)

@@ -1,22 +1,25 @@
 from __future__ import annotations
 
-import contextlib
 import typing
 import uuid
+
+from .base_node import BaseNode
+from .handle import Handle
+from .marker import Marker
 
 
 class Edge:
     def __init__(
         self,
-        source_node_id: uuid.UUID,
-        source_handle_id: uuid.UUID,
-        target_node_id: uuid.UUID,
-        target_handle_id: uuid.UUID,
+        source_node: BaseNode,
+        source_handle: Handle,
+        target_node: BaseNode,
+        target_handle: Handle,
         label: str = "",
         *,
         type: typing.Literal["default", "straight", "step", "smoothstep", "simplebezier"] = "default",
-        source_marker_id: uuid.UUID | None = None,  # TODO
-        target_marker_id: uuid.UUID | None = None,  # TODO
+        source_marker: Marker | None = None,  # TODO
+        target_marker: Marker | None = None,  # TODO
         hidden: bool = False,
         animated: bool = False,
         deletable: bool = True,
@@ -27,14 +30,14 @@ class Edge:
     ) -> None:
 
         self.id = uuid.uuid4()
-        self.source_node_id = source_node_id
-        self.source_handle_id = source_handle_id
-        self.target_node_id = target_node_id
-        self.target_handle_id = target_handle_id
+        self.source_node = source_node
+        self.source_handle = source_handle
+        self.target_node = target_node
+        self.target_handle = target_handle
         self.label = label
         self.type = type
-        self.source_marker_id = source_marker_id
-        self.target_marker_id = target_marker_id
+        self.source_marker = source_marker
+        self.target_marker = target_marker
         self.hidden = hidden
         self.animated = animated
         self.deletable = deletable
@@ -63,14 +66,14 @@ class Edge:
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
             "id": str(self.id),
-            "source": str(self.source_node_id),
-            "sourceHandle": str(self.source_handle_id),
-            "target": str(self.target_node_id),
-            "targetHandle": str(self.target_handle_id),
+            "source": str(self.source_node.id),
+            "sourceHandle": str(self.source_handle.id),
+            "target": str(self.target_node.id),
+            "targetHandle": str(self.target_handle.id),
             "label": self.label,
             "type": self.type,
-            "markerStartId": str(self.source_marker_id) if self.source_marker_id is not None else None,
-            "markerEndId": str(self.target_marker_id) if self.target_marker_id is not None else None,
+            "markerStart": self.source_marker.as_dict() if self.source_marker is not None else {},
+            "markerEnd": self.target_marker.as_dict() if self.target_marker is not None else {},
             "hidden": self.hidden,
             "animated": self.animated,
             "deletable": self.deletable,
@@ -85,18 +88,14 @@ class Edge:
     @classmethod
     def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
         instance = cls(
-            source_node_id=uuid.UUID(input_dict["source"]),
-            source_handle_id=uuid.UUID(input_dict["sourceHandle"]),
-            target_node_id=uuid.UUID(input_dict["target"]),
-            target_handle_id=uuid.UUID(input_dict["targetHandle"]),
+            source_node=input_dict["source"],
+            source_handle=input_dict["sourceHandle"],
+            target_node=input_dict["target"],
+            target_handle=input_dict["targetHandle"],
             label=input_dict.get("label", ""),
             type=input_dict.get("type", "default"),
-            source_marker_id=uuid.UUID(input_dict.get("markerStartId"))
-            if input_dict.get("markerStartId") is not None
-            else None,
-            target_marker_id=uuid.UUID(input_dict.get("markerEndId"))
-            if input_dict.get("markerEndId") is not None
-            else None,
+            source_marker=input_dict.get("markerStartId"),
+            target_marker=input_dict.get("markerEndId"),
             hidden=input_dict.get("hidden", False),
             animated=input_dict.get("animated", False),
             deletable=input_dict.get("deletable", True),
@@ -111,41 +110,5 @@ class Edge:
 
         return instance
 
-    def update_from_dict(self, input_dict: dict[str, typing.Any]):
-        with contextlib.suppress(KeyError):
-            self.source_node_id = uuid.UUID(input_dict["source"])
-        with contextlib.suppress(KeyError):
-            self.source_handle_id = uuid.UUID(input_dict["sourceHandle"])
-        with contextlib.suppress(KeyError):
-            self.target_node_id = uuid.UUID(input_dict["target"])
-        with contextlib.suppress(KeyError):
-            self.target_handle_id = uuid.UUID(input_dict["targetHandle"])
-        with contextlib.suppress(KeyError):
-            self.label = input_dict["label"]
-        with contextlib.suppress(KeyError):
-            self.type = input_dict["type"]
-        with contextlib.suppress(KeyError):
-            self.source_marker_id = (
-                uuid.UUID(input_dict["markerStartId"]) if input_dict["markerStartId"] is not None else None
-            )
-        with contextlib.suppress(KeyError):
-            self.target_marker_id = (
-                uuid.UUID(input_dict["markerEndId"]) if input_dict["markerEndId"] is not None else None
-            )
-        with contextlib.suppress(KeyError):
-            self.hidden = input_dict["hidden"]
-        with contextlib.suppress(KeyError):
-            self.animated = input_dict["animated"]
-        with contextlib.suppress(KeyError):
-            self.deletable = input_dict["deletable"]
-        with contextlib.suppress(KeyError):
-            self.focusable = input_dict["focusable"]
-        with contextlib.suppress(KeyError):
-            self.z_index = input_dict["zIndex"]
-        with contextlib.suppress(KeyError):
-            self.style = input_dict["style"]
-        with contextlib.suppress(KeyError):
-            self.label_style = input_dict["labelStyle"]
-
     def __repr__(self):
-        return f"StreamlitFlowEdge({self.id}, {self.source_node_id}:{self.source_handle_id}->{self.target_node_id}:{self.target_handle_id}, '{self.label}')"
+        return f"StreamlitFlowEdge({self.id}, {self.source_node.id}:{self.source_handle.id}->{self.target_node.id}:{self.target_handle.id}, '{self.label}')"

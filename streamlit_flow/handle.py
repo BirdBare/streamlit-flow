@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import typing
 import uuid
 
@@ -12,7 +11,7 @@ class Handle:
         *,
         is_source: bool = True,
         is_target: bool = True,
-        valid_target_ids: set[uuid.UUID] = set(),
+        valid_targets: set[Handle] = set(),
         style: dict[str, typing.Any] = {},
     ):
         self.id = uuid.uuid4()
@@ -20,10 +19,10 @@ class Handle:
         self.is_source = is_source
         self.is_target = is_target
 
-        if valid_target_ids == set():
-            self.valid_target_ids = set()
+        if valid_targets == set():
+            self.valid_targets = set()
         else:
-            self.valid_target_ids = valid_target_ids
+            self.valid_targets = valid_targets
 
         if style == {}:
             self.style = {}
@@ -40,21 +39,21 @@ class Handle:
         return hash(self.id)
 
     @typing.overload
-    def add_valid_targets(self, *targets: uuid.UUID): ...
+    def add_valid_targets(self, *targets: Handle): ...
 
     @typing.overload
     def add_valid_targets(self, *targets: None): ...
 
-    def add_valid_targets(self, *targets: uuid.UUID | None):
+    def add_valid_targets(self, *targets: Handle | None):
         if None in targets:
-            self.valid_target_ids = set()
+            self.valid_targets = set()
 
         else:
             for target in targets:
                 if target is None:
                     continue
 
-                self.valid_target_ids.add(target)
+                self.valid_targets.add(target)
 
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = {
@@ -62,39 +61,11 @@ class Handle:
             "position": self.position,
             "isConnectableStart": self.is_source,
             "isConnectableEnd": self.is_target,
-            "validTargetIds": [str(valid_target_id) for valid_target_id in self.valid_target_ids],
+            "validTargetIds": [str(valid_target.id) for valid_target in self.valid_targets],
             "style": self.style,
         }
 
         return output_dict
-
-    @classmethod
-    def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
-
-        instance = cls(
-            position=input_dict.get("position", "top"),
-            is_source=input_dict.get("isConnectableStart", True),
-            is_target=input_dict.get("isConnectableEnd", True),
-            valid_target_ids={uuid.UUID(target_id) for target_id in input_dict.get("validTargetIds", [])},
-            style=input_dict.get("style", {}),
-        )
-
-        if "id" in input_dict:
-            instance.id = uuid.UUID(input_dict["id"])
-
-        return instance
-
-    def update_from_dict(self, input_dict: dict[str, typing.Any]):
-        with contextlib.suppress(KeyError):
-            self.position = input_dict["position"]
-        with contextlib.suppress(KeyError):
-            self.is_source = input_dict["isConnectableStart"]
-        with contextlib.suppress(KeyError):
-            self.is_target = input_dict["isConnectableEnd"]
-        with contextlib.suppress(KeyError):
-            self.valid_target_ids = {uuid.UUID(target_id) for target_id in input_dict["validTargetIds"]}
-        with contextlib.suppress(KeyError):
-            self.style = input_dict["style"]
 
     def __repr__(self):
         return f"StreamlitFlowHandle({self.id}, {self.position}, {self.is_source}, {self.is_target})"

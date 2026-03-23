@@ -4,6 +4,8 @@ import contextlib
 import typing
 import uuid
 
+from .handle import Handle
+
 
 class BaseNode:
     subclass_registry: dict[str, type[typing.Self]] = {}
@@ -16,7 +18,7 @@ class BaseNode:
         pos_x: float,
         pos_y: float,
         *,
-        handle_ids: set[uuid.UUID] = set(),
+        handles: set[Handle] = set(),
         hidden: bool = False,
         draggable: bool = False,
         selectable: bool = False,
@@ -30,10 +32,10 @@ class BaseNode:
         self.pos_x = pos_x
         self.pos_y = pos_y
 
-        if handle_ids == set():
-            self.handle_ids = set()
+        if handles == set():
+            self.handles = typing.cast("set[Handle]", set())
         else:
-            self.handle_ids = handle_ids
+            self.handles = handles
 
         self.hidden = hidden
         self.draggable = draggable
@@ -80,29 +82,8 @@ class BaseNode:
         output_dict["type"] = type(self).__name__
 
         output_dict["data"] = {}
-        output_dict["data"]["handleIds"] = [str(handle_id) for handle_id in self.handle_ids]
+        output_dict["data"]["handles"] = [handle.as_dict() for handle in self.handles]
         return output_dict
-
-    @classmethod
-    def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
-
-        instance = cls(
-            pos_x=input_dict.get("position", {}).get("x", 0),
-            pos_y=input_dict.get("position", {}).get("y", 0),
-            handle_ids={uuid.UUID(handle_id) for handle_id in input_dict.get("data", {}).get("handleIds", [])},
-            hidden=input_dict.get("hidden", False),
-            draggable=input_dict.get("draggable", False),
-            selectable=input_dict.get("selectable", False),
-            deletable=input_dict.get("deletable", False),
-            z_index=input_dict.get("zIndex", False),
-            focusable=input_dict.get("focusable", False),
-            style=input_dict.get("style", {}),
-        )
-
-        if "id" in input_dict:
-            instance.id = uuid.UUID(input_dict["id"])
-
-        return instance
 
     def update_from_dict(self, input_dict: dict[str, typing.Any]):
         with contextlib.suppress(KeyError):
@@ -110,7 +91,7 @@ class BaseNode:
         with contextlib.suppress(KeyError):
             self.pos_y = input_dict["position"]["y"]
         with contextlib.suppress(KeyError):
-            self.handle_ids = {uuid.UUID(handle_id) for handle_id in input_dict["data"]["handleIds"]}
+            self.handles = typing.cast("set[Handle]", input_dict["data"]["handles"])
         with contextlib.suppress(KeyError):
             self.hidden = input_dict["hidden"]
         with contextlib.suppress(KeyError):

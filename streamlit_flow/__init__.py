@@ -68,31 +68,9 @@ def render(
     - **hide_watermark** : bool : Whether to hide the watermark.
 
     """
-    node_by_id: dict[str, BaseNode] = {str(node.id): node for node in diagram.nodes}
-    handle_by_id: dict[str, Handle] = {str(handle.id): handle for handle in diagram.handles}
-    edge_by_id: dict[str, Edge] = {str(edge.id): edge for edge in diagram.edges}
-    marker_by_id: dict[str, Marker] = {str(marker.id): marker for marker in diagram.markers}
-
-    node_dicts = [node.as_dict() for node in diagram.nodes]
-    for node_dict in node_dicts:
-        node_dict["data"]["handles"] = [
-            handle_by_id[handle_id].as_dict() for handle_id in node_dict["data"]["handleIds"]
-        ]
-
-    edge_dicts = [edge.as_dict() for edge in diagram.edges]
-    for edge_dict in edge_dicts:
-        marker_id = edge_dict["markerStartId"]
-        if marker_id is not None:
-            edge_dict["markerStart"] = marker_by_id[marker_id].as_dict()
-
-        marker_id = edge_dict["markerEndId"]
-
-        if marker_id is not None:
-            edge_dict["markerEnd"] = marker_by_id[marker_id].as_dict()
-
     component_value = _st_flow_func(
-        nodes=node_dicts,
-        edges=edge_dicts,
+        nodes=[node.as_dict() for node in diagram.nodes],
+        edges=[edge.as_dict() for edge in diagram.edges],
         height=height,
         showControls=show_controls,
         fitView=fit_view,
@@ -116,39 +94,45 @@ def render(
     if component_value is None:
         return diagram
 
-    output_nodes: set[BaseNode] = set()
-    output_handles: set[Handle] = set()
+    node_by_id: dict[str, BaseNode] = {str(node.id): node for node in diagram.nodes}
+    handle_by_id: dict[str, Handle] = {str(handle.id): handle for node in diagram.nodes for handle in node.handles}
+    edge_by_id: dict[str, Edge] = {str(edge.id): edge for edge in diagram.edges}
+    marker_by_id: dict[str, Marker] = {
+        str(marker.id): marker
+        for edge in diagram.edges
+        for marker in (edge.source_marker, edge.target_marker)
+        if marker is not None
+    }
+
     for node_dict in component_value["nodes"]:
         node_id = node_dict["id"]
-        try:
-            node = node_by_id[node_id]
-            node.update_from_dict(node_dict)
-        except KeyError:
-            node = BaseNode.subclass_registry[node_dict["type"]].from_dict(node_dict)
 
-        output_nodes.add(node)
+        assert node_id in node_by_id
 
-    output_edges: set[Edge] = set()
-    output_markers: set[Marker] = set()
+        node = node_by_id[node_id]
+        node_dict["data"]["handles"] = node.handles
+        node.update_from_dict(node_dict)
+
     for edge_dict in component_value["edges"]:
         edge_id = edge_dict["id"]
-        try:
-            edge = edge_by_id[edge_id]
-            edge.update_from_dict(edge_dict)
-        except KeyError:
+
+        if edge_id not in edge_by_id:
+            edge_dict["source"] = node_by_id[edge_dict["source"]]
+            edge_dict["sourceHandle"] = handle_by_id[edge_dict["sourceHandle"]]
+            edge_dict["target"] = node_by_id[edge_dict["target"]]
+            edge_dict["targetHandle"] = handle_by_id[edge_dict["targetHandle"]]
+
             edge = Edge.from_dict(edge_dict)
 
-        output_edges.add(edge)
+            edge_by_id[str(edge.id)] = edge
 
     selected_id = component_value["selectedId"]
     if selected_id is not None:
         selected_id = uuid.UUID(selected_id)
 
     return Diagram(
-        nodes=list(output_nodes),
-        edges=list(output_edges),
-        handles=diagram.handles,
-        markers=diagram.markers,
+        nodes=list(node_by_id.values()),
+        edges=list(edge_by_id.values()),
         selected_id=selected_id,
         timestamp=component_value["timestamp"],
     )

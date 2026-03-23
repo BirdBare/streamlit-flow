@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import typing
 import uuid
 
@@ -36,28 +35,6 @@ class Marker:
 
     def __hash__(self) -> int:
         return hash(self.id)
-
-    @classmethod
-    def from_dict(cls: type[typing.Self], input_dict: dict[str, typing.Any]) -> typing.Self:
-
-        instance = cls(
-            type=input_dict.get("type", "arrow"),
-            color=input_dict.get("color"),
-            stroke_width=input_dict.get("strokeWidth"),
-        )
-
-        if "id" in input_dict:
-            instance.id = uuid.UUID(input_dict["id"])
-
-        return instance
-
-    def update_from_dict(self, input_dict: dict[str, typing.Any]):
-        with contextlib.suppress(KeyError):
-            self.type = input_dict["type"]
-        with contextlib.suppress(KeyError):
-            self.color = input_dict["color"]
-        with contextlib.suppress(KeyError):
-            self.stroke_width = input_dict["strokeWidth"]
 
     def __repr__(self):
         return f"StreamlitFlowMarker({self.type}, {self.color}, {self.stroke_width})"
