@@ -127,12 +127,17 @@ def render(
             edge_by_id[str(edge.id)] = edge
 
     selected_id = component_value["selectedId"]
+    selected = None
+
     if selected_id is not None:
-        selected_id = uuid.UUID(selected_id)
+        if selected_id in node_by_id:
+            selected = node_by_id[selected_id]
+        elif selected_id in edge_by_id:
+            selected = edge_by_id[selected_id]
 
     return Diagram(
         nodes=list(node_by_id.values()),
         edges=list(edge_by_id.values()),
-        selected_id=selected_id,
+        selected=selected,
         timestamp=component_value["timestamp"],
     )
