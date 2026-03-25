@@ -12,12 +12,12 @@ import {buildHandles} from "./StreamlitFlowHandle.jsx"
 const remarkPlugins = [remarkGfm, remarkMath];
 const rehypePlugins = [rehypeHighlight, rehypeRaw, rehypeKatex];
 
-const MemoizedMarkdown = memo(({ content }) => (
+const MemoizedMarkdown = memo(({ markdown }) => (
     <Markdown 
         rehypePlugins={rehypePlugins} 
         remarkPlugins={remarkPlugins}
     >
-        {content}
+        {markdown}
     </Markdown>
 ));
 
@@ -28,7 +28,7 @@ const StreamlitFlowMarkdownNode = ({id, data, connectingNodeId,connectingHandleI
             {buildHandles(id, data.handles,connectingNodeId,connectingHandleId,validTargetHandleIds)}
 
             <div className="markdown-node react-flow__node-default" style={{width:"auto"}}>
-                <MemoizedMarkdown content={data.content} />
+                <MemoizedMarkdown markdown={data.markdown} />
             </div>
         </>
     );

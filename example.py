@@ -11,7 +11,7 @@ handles = [handle_right_source, handle_left_target]
 node_1 = streamlit_flow.MarkdownNode(
     pos_x=100,
     pos_y=100,
-    content="Node 1",
+    markdown="Node 1",
     draggable=False,
     handles={handle_right_source},
 )
@@ -19,21 +19,21 @@ node_1 = streamlit_flow.MarkdownNode(
 node_2 = streamlit_flow.MarkdownNode(
     pos_x=350,
     pos_y=50,
-    content="Node 2",
+    markdown="Node 2",
     draggable=False,
     handles={handle_right_source, handle_left_target},
 )
 node_3 = streamlit_flow.MarkdownNode(
     pos_x=350,
     pos_y=150,
-    content="Node 3",
+    markdown="Node 3",
     draggable=False,
     handles={handle_right_source, handle_left_target},
 )
 node_4 = streamlit_flow.MarkdownNode(
     pos_x=600,
     pos_y=100,
-    content="Node 4",
+    markdown="Node 4",
     draggable=False,
     handles={handle_left_target},
 )
