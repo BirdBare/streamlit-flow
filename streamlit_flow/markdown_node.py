@@ -12,7 +12,7 @@ class MarkdownNode(BaseNode):
         self,
         pos_x: float,
         pos_y: float,
-        markdown: typing.Any,
+        markdown: typing.Any = "",
         *,
         handles: set[Handle] = set(),
         hidden: bool = False,
@@ -22,6 +22,7 @@ class MarkdownNode(BaseNode):
         focusable: bool = True,
         z_index: float = 0,
         style: dict[str, typing.Any] = {},
+        markdown_style: dict[str, typing.Any] = {},
     ):
         super().__init__(
             pos_x=pos_x,
@@ -37,10 +38,16 @@ class MarkdownNode(BaseNode):
         )
         self.markdown = markdown
 
+        if markdown_style == {}:
+            self.markdown_style = {}
+        else:
+            self.markdown_style = markdown_style
+
     def as_dict(self) -> dict[str, typing.Any]:
         output_dict = super().as_dict()
 
         output_dict["data"]["markdown"] = self.markdown
+        output_dict["data"]["markdownStyle"] = self.markdown_style
 
         return output_dict
 
@@ -48,6 +55,8 @@ class MarkdownNode(BaseNode):
         super().update_from_dict(input_dict)
         with contextlib.suppress(KeyError):
             self.markdown = input_dict["data"]["markdown"]
+        with contextlib.suppress(KeyError):
+            self.markdown_style = input_dict["data"]["markdownStyle"]
 
     def __repr__(self):
         return (

@@ -8,16 +8,20 @@ from .handle import Handle
 from .marker import Marker
 
 
-class Edge:
+class BaseEdge:
+    subclass_registry: dict[str, type[typing.Self]] = {}
+
+    def __init_subclass__(cls) -> None:
+        BaseEdge.subclass_registry[cls.__name__] = cls
+
     def __init__(
         self,
         source_node: BaseNode,
         source_handle: Handle,
         target_node: BaseNode,
         target_handle: Handle,
-        label: str = "",
         *,
-        type: typing.Literal["default", "straight", "step", "smoothstep", "simplebezier"] = "default",
+        line_type: typing.Literal["straight", "smoothstep", "simplebezier", "bezier"] = "simplebezier",
         source_marker: Marker | None = None,  # TODO
         target_marker: Marker | None = None,  # TODO
         hidden: bool = False,
@@ -26,7 +30,6 @@ class Edge:
         focusable: bool = True,
         z_index: float = 0,
         style: dict[str, typing.Any] = {},
-        label_style: dict[str, typing.Any] = {},
     ) -> None:
 
         self.id = uuid.uuid4()
@@ -34,8 +37,7 @@ class Edge:
         self.source_handle = source_handle
         self.target_node = target_node
         self.target_handle = target_handle
-        self.label = label
-        self.type = type
+        self.line_type = line_type
         self.source_marker = source_marker
         self.target_marker = target_marker
         self.hidden = hidden
@@ -49,10 +51,8 @@ class Edge:
         else:
             self.style = style
 
-        if label_style == {}:
-            self.label_style = {}
-        else:
-            self.label_style = label_style
+        if type(self) is BaseEdge:
+            raise NotImplementedError("Cannot instantiate 'StreamlitFlowEdge'. Base class.")
 
     def __eq__(self, value) -> bool:
         try:
@@ -70,8 +70,6 @@ class Edge:
             "sourceHandle": str(self.source_handle.id),
             "target": str(self.target_node.id),
             "targetHandle": str(self.target_handle.id),
-            "label": self.label,
-            "type": self.type,
             "markerStart": self.source_marker.as_dict() if self.source_marker is not None else {},
             "markerEnd": self.target_marker.as_dict() if self.target_marker is not None else {},
             "hidden": self.hidden,
@@ -80,8 +78,12 @@ class Edge:
             "focusable": self.focusable,
             "zIndex": self.z_index,
             "style": self.style,
-            "labelStyle": self.label_style,
         }
+
+        output_dict["type"] = type(self).__name__
+
+        output_dict["data"] = {}
+        output_dict["data"]["lineType"] = self.line_type
 
         return output_dict
 
@@ -92,8 +94,7 @@ class Edge:
             source_handle=input_dict["sourceHandle"],
             target_node=input_dict["target"],
             target_handle=input_dict["targetHandle"],
-            label=input_dict.get("label", ""),
-            type=input_dict.get("type", "default"),
+            line_type=input_dict.get("data", {}).get("lineType"),
             source_marker=input_dict.get("markerStartId"),
             target_marker=input_dict.get("markerEndId"),
             hidden=input_dict.get("hidden", False),
@@ -102,7 +103,6 @@ class Edge:
             focusable=input_dict.get("focusable", True),
             z_index=input_dict.get("zIndex", 0),
             style=input_dict.get("style", {}),
-            label_style=input_dict.get("labelStyle", {}),
         )
 
         if "id" in input_dict:
@@ -111,4 +111,4 @@ class Edge:
         return instance
 
     def __repr__(self):
-        return f"StreamlitFlowEdge({self.id}, {self.source_node.id}:{self.source_handle.id}->{self.target_node.id}:{self.target_handle.id}, '{self.label}')"
+        return f"StreamlitFlowEdge({self.id}, {self.source_node.id}:{self.source_handle.id}->{self.target_node.id}:{self.target_handle.id})"

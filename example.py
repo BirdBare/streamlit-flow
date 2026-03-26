@@ -33,51 +33,56 @@ node_3 = streamlit_flow.MarkdownNode(
 node_4 = streamlit_flow.MarkdownNode(
     pos_x=600,
     pos_y=100,
-    markdown="Node 4",
+    markdown="Node 4<br>line",
     draggable=False,
     handles={handle_left_target},
 )
-nodes: list[streamlit_flow.BaseNode] = [node_1, node_2, node_3, node_4]
+nodes: set[streamlit_flow.BaseNode] = {node_1, node_2, node_3, node_4}
 
 marker_arrow = streamlit_flow.Marker("arrow")
 print(marker_arrow.id)
 markers = [marker_arrow]
 
 
-edges = [
-    streamlit_flow.Edge(
+edges: set[streamlit_flow.BaseEdge] = {
+    streamlit_flow.MarkdownEdge(
         node_1,
         handle_right_source,
         node_2,
         handle_left_target,
-        animated=True,
+        animated=False,
         target_marker=marker_arrow,
+        markdown_style={"background": "white", "color": "black"},
     ),
-    streamlit_flow.Edge(
+    streamlit_flow.MarkdownEdge(
         node_1,
         handle_right_source,
         node_3,
         handle_left_target,
         animated=True,
         target_marker=marker_arrow,
+        markdown="HELLO",
     ),
-    streamlit_flow.Edge(
+    streamlit_flow.MarkdownEdge(
         node_2,
         handle_right_source,
         node_4,
         handle_left_target,
         animated=True,
         target_marker=marker_arrow,
+        markdown="Node 4 <br> Line",
+        markdown_style={"background": "white", "color": "black"},
     ),
-    streamlit_flow.Edge(
+    streamlit_flow.MarkdownEdge(
         node_3,
         handle_right_source,
         node_4,
         handle_left_target,
         animated=True,
         target_marker=marker_arrow,
+        markdown="HELLO",
     ),
-]
+}
 
 if "static_flow_state" not in st.session_state:
     st.session_state.static_flow_state = streamlit_flow.Diagram(nodes, edges)

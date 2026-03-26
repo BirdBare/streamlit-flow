@@ -22,6 +22,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import './style.css';
 
 import {StreamlitFlowMarkdownNode} from "./components/StreamlitFlowMarkdownNode";
+import {StreamlitFlowMarkdownEdge} from "./components/StreamlitFlowMarkdownEdge";
 import createElkGraphLayout from "./layouts/ElkLayout";
 
 const StreamlitFlowComponent = (props) => {    
@@ -45,6 +46,7 @@ const StreamlitFlowComponent = (props) => {
     const {fitView, getNodes, getEdges} = useReactFlow();
 
     const nodeTypes = useMemo(() => ({MarkdownNode: (props) => <StreamlitFlowMarkdownNode {...props} connectingNodeId={connectingNodeId} connectingHandleId={connectingHandleId} validTargetHandleIds={validTargetHandleIds}/>,}), [connectingNodeId,connectingHandleId,validTargetHandleIds]);
+    const edgeTypes = useMemo(() => ({MarkdownEdge: (props) => <StreamlitFlowMarkdownEdge {...props}/>,}), []);
 
     // Helper Functions
     const handleLayout = () => {
@@ -169,7 +171,7 @@ const StreamlitFlowComponent = (props) => {
         }
 
         const newEdgeId = uuidv4(); 
-        const newEdges = addEdge({id: newEdgeId, ...connection, type:props.args["typeOfNewEdges"], markerStart: {},markerEnd: {}, label:"",hidden:false, animated:props.args["animateNewEdges"], deletable:true, focusable:true,zIndex:0,style:{},labelStyle:{}}, edges);
+        const newEdges = addEdge({id: newEdgeId, ...connection, type:"MarkdownEdge",data:{lineType:props.args["typeOfNewEdges"]}, animated:props.args["animateNewEdges"]}, edges);
         setEdges(newEdges);
         handleDataReturnToStreamlit(nodes, newEdges, newEdgeId);
     }
@@ -188,6 +190,7 @@ const StreamlitFlowComponent = (props) => {
             <ReactFlow
                 connectionMode="loose"
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 ref={ref}
                 nodes={nodes}
                 onNodesChange={onNodesChange}

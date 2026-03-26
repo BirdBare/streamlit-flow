@@ -27,8 +27,8 @@ const StreamlitFlowMarkdownNode = ({id, data, connectingNodeId,connectingHandleI
         <>
             {buildHandles(id, data.handles,connectingNodeId,connectingHandleId,validTargetHandleIds)}
 
-            <div className="markdown-node react-flow__node-default" style={{width:"auto"}}>
-                <MemoizedMarkdown markdown={data.markdown} />
+            <div className="markdown-node react-flow__node-default" style={{width:"auto", ...data.markdownStyle}}>
+                <MemoizedMarkdown className="markdown-node react-flow__node-default" style={{width:"auto", ...data.markdownStyle}} markdown={data.markdown} />
             </div>
         </>
     );

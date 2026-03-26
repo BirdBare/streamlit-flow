@@ -3,6 +3,14 @@
     margin-bottom: 0.5rem;
 }
 
+.markdown-edge * {
+    margin-top: 0.25rem;
+    margin-left: 0.25rem;
+    margin-bottom: 0.25rem;
+    margin-right: 0.25rem;
+    font-size: 12px;
+}
+
 :root {
     --color-canvas-default: #ffffff;
     --color-canvas-subtle: #f6f8fa;

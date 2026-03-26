@@ -4,11 +4,12 @@ import uuid
 
 import streamlit.components.v1 as components
 
+from .base_edge import BaseEdge
 from .base_node import BaseNode
 from .diagram import Diagram
-from .edge import Edge
 from .handle import Handle
 from .layouts import Layout, ManualLayout
+from .markdown_edge import MarkdownEdge
 from .markdown_node import MarkdownNode
 from .marker import Marker
 
@@ -17,7 +18,7 @@ _RELEASE = True
 if not _RELEASE:
     _st_flow_func = components.declare_component(
         "streamlit_flow",
-        url="http://localhost:3001/",
+        url="http://localhost:3333/",
     )
 
 else:
@@ -36,7 +37,7 @@ def render(
     show_minimap: bool = False,
     allow_new_edges: bool = False,
     animate_new_edges: bool = False,
-    type_of_new_edges: typing.Literal["default", "straight", "step", "smoothstep", "simplebezier"] = "default",
+    new_edge_line_type: typing.Literal["straight", "smoothstep", "simplebezier", "bezier"] = "simplebezier",
     style: dict = {},
     layout: Layout = ManualLayout(),
     get_node_on_click: bool = False,
@@ -78,7 +79,7 @@ def render(
         style=style,
         allowNewEdges=allow_new_edges,
         animateNewEdges=animate_new_edges,
-        typeOfNewEdges=type_of_new_edges,
+        typeOfNewEdges=new_edge_line_type,
         layoutOptions=layout.__to_dict__(),
         getNodeOnClick=get_node_on_click,
         getEdgeOnClick=get_edge_on_click,
@@ -96,7 +97,7 @@ def render(
 
     node_by_id: dict[str, BaseNode] = {str(node.id): node for node in diagram.nodes}
     handle_by_id: dict[str, Handle] = {str(handle.id): handle for node in diagram.nodes for handle in node.handles}
-    edge_by_id: dict[str, Edge] = {str(edge.id): edge for edge in diagram.edges}
+    edge_by_id: dict[str, BaseEdge] = {str(edge.id): edge for edge in diagram.edges}
     marker_by_id: dict[str, Marker] = {
         str(marker.id): marker
         for edge in diagram.edges
@@ -122,7 +123,7 @@ def render(
             edge_dict["target"] = node_by_id[edge_dict["target"]]
             edge_dict["targetHandle"] = handle_by_id[edge_dict["targetHandle"]]
 
-            edge = Edge.from_dict(edge_dict)
+            edge = BaseEdge.subclass_registry[edge_dict["type"]].from_dict(edge_dict)
 
             edge_by_id[str(edge.id)] = edge
 
@@ -136,8 +137,8 @@ def render(
             selected = edge_by_id[selected_id]
 
     return Diagram(
-        nodes=list(node_by_id.values()),
-        edges=list(edge_by_id.values()),
+        nodes=set(node_by_id.values()),
+        edges=set(edge_by_id.values()),
         selected=selected,
         timestamp=component_value["timestamp"],
     )

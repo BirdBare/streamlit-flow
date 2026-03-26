@@ -8,11 +8,6 @@ from .handle import Handle
 
 
 class BaseNode:
-    subclass_registry: dict[str, type[typing.Self]] = {}
-
-    def __init_subclass__(cls) -> None:
-        BaseNode.subclass_registry[cls.__name__] = cls
-
     def __init__(
         self,
         pos_x: float,
@@ -54,7 +49,7 @@ class BaseNode:
         if "height" not in self.style:
             self.style["height"] = "auto"
 
-        if type(self) is typing.Self:
+        if type(self) is BaseNode:
             raise NotImplementedError("Cannot instantiate 'StreamlitFlowNode'. Base class.")
 
     def __eq__(self, value) -> bool:
