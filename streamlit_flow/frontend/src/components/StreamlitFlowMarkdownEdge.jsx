@@ -28,13 +28,25 @@ const MemoizedMarkdown = memo(({ markdown }) => (
     </Markdown>
 ));
 
-const StreamlitFlowMarkdownEdge = ({ id, data, sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition }) => {
+const StreamlitFlowMarkdownEdge = (props) => {
+    const {
+    id,
+    data,
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+    } = props;
+    
     const getPath = {
         straight: getStraightPath,
         smoothstep: getSmoothStepPath,
         simplebezier: getSimpleBezierPath,
         bezier: getBezierPath
     }
+
 
     const [edgePath, labelX, labelY] = getPath[data.lineType]({
         sourceX,
@@ -45,11 +57,10 @@ const StreamlitFlowMarkdownEdge = ({ id, data, sourceX, sourceY, sourcePosition,
         targetPosition
         });
 
-    console.log(data.markdown)
 
     return (
         <>
-            <BaseEdge id={id} path={edgePath} />
+            <BaseEdge id={id} path={edgePath} {...props}/>
             <EdgeLabelRenderer>
                 {data?.markdown?.trim() && (
                     <div className="nodrag nopan react-flow__edge-label react-flow__edge-label-inner markdown-edge"
