@@ -27,7 +27,8 @@
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
-    "streamlit-component-lib": "^2.0.0"
+    "streamlit-component-lib": "^2.0.0",
+    "lodash.isequal": "4.5.0"
   },
   "scripts": {
     "start": "GENERATE_SOURCEMAP=false PORT=3333 react-scripts start",

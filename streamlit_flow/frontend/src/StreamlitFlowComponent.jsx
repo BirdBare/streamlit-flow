@@ -3,6 +3,7 @@ import {
     Streamlit,
 } from "streamlit-component-lib"
 import { v4 as uuidv4 } from 'uuid';
+import isEqual from "lodash.isequal";
 import ReactFlow, {
     Controls,
     Background,
@@ -29,9 +30,6 @@ const StreamlitFlowComponent = (props) => {
     const [viewFitAfterLayout, setViewFitAfterLayout] = useState(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(props.args.nodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(props.args.edges);
-    const [lastUpdateTimestamp, setLastUpdateTimestamp] = useState(props.args.timestamp);
-    const [layoutNeedsUpdate, setLayoutNeedsUpdate] = useState(false);
-    
 
     const [connectingNodeId, setConnectingNodeId] = useState(null)
     const [connectingHandleId, setConnectingHandleId] = useState(null)
@@ -40,7 +38,6 @@ const StreamlitFlowComponent = (props) => {
     const [layoutCalculated, setLayoutCalculated] = useState(false);
 
     const nodesInitialized = useNodesInitialized({'includeHiddenNodes': false});
-
 
     const ref = useRef(null);
     const {fitView, getNodes, getEdges} = useReactFlow();
@@ -62,10 +59,7 @@ const StreamlitFlowComponent = (props) => {
     }
 
     const handleDataReturnToStreamlit = (_nodes, _edges, selectedId) => {
-
-        const timestamp = (new Date()).getTime();
-        setLastUpdateTimestamp(timestamp);
-        Streamlit.setComponentValue({'nodes': _nodes, 'edges': _edges, 'selectedId': selectedId, 'timestamp': timestamp});
+        Streamlit.setComponentValue({'nodes': _nodes, 'edges': _edges, 'selectedId': selectedId});
     }
 
     useEffect(() => Streamlit.setFrameHeight());
@@ -78,25 +72,17 @@ const StreamlitFlowComponent = (props) => {
 
     // Update elements if streamlit sends new arguments - check by comparing timestamp recency
     useEffect(() => {
-        if (lastUpdateTimestamp <= props.args.timestamp)
+        const nodesChanged = !isEqual(props.args.nodes, nodes);
+        const edgesChanged = !isEqual(props.args.edges, edges);
+
+        if (nodesChanged || edgesChanged)
         {
-            setLayoutNeedsUpdate(true);
             setNodes(props.args.nodes);
             setEdges(props.args.edges);
-            setLastUpdateTimestamp((new Date()).getTime());
-            handleDataReturnToStreamlit(props.args.nodes, props.args.edges, null);
+            setLayoutCalculated(false);
         }
 
     }, [props.args.nodes, props.args.edges]);
-
-    // Handle layout when streamlit sends new state
-    useEffect(() => {
-        if(layoutNeedsUpdate)
-        {
-            setLayoutNeedsUpdate(false);
-            setLayoutCalculated(false);
-        }
-    }, [nodes, edges])
 
     // Auto zoom callback
     useEffect(() => {
