@@ -108,6 +108,9 @@ def render(
     for node_dict in component_value["nodes"]:
         node_id = node_dict["id"]
 
+        if node_id not in node_by_id:
+            return diagram
+
         node = node_by_id[node_id]
         node_dict["data"]["handles"] = node.handles
         node.update_from_dict(node_dict)
