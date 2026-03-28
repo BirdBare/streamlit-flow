@@ -88,6 +88,7 @@ def render(
         minZoom=min_zoom,
         hideWatermark=hide_watermark,
         key=key,
+        timestamp=diagram.timestamp,
         component="streamlit_flow",
     )
 
@@ -137,4 +138,5 @@ def render(
         nodes=set(node_by_id.values()),
         edges=set(edge_by_id.values()),
         selected=selected,
+        timestamp=component_value["timestamp"],
     )
